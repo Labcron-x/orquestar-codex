@@ -107,6 +107,6 @@ convivir en la misma máquina sin tocar nada de la otra. La vieja `.claude/skill
 ## 8. Más skills
 
 `skills/<nombre>/` guarda otras skills del equipo con la misma lógica de reparto. `orq instalar-skills` las copia
-a `~/.codex/skills/` y marca cada copia con `.origen-orquestador`, para no pisar skills ajenas. Una skill nueva se crea
+a `~/.codex/skills/` y marca cada copia con `.origen-orquestar-codex`, para no pisar skills ajenas. Una skill nueva se crea
 con `orq nueva-skill`, según la convención de `skills/README.md`: es genérica y lo propio del proyecto va en el
 repo del proyecto. Su `SKILL.md` dice qué pasos delega en agentes y cuáles hace Codex.
