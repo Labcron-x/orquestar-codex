@@ -1,4 +1,4 @@
-# Instrucciones para agentes (Gemini, OpenCode)
+# Instrucciones para agentes (agy, OpenCode, Gemini CLI, Qwen)
 
 Trabajas en un worktree de git, en la rama `agente/<ID>`. Tu tarea está en `docs/agentes/tareas/<ID>.md`.
 
@@ -18,7 +18,7 @@ Trabajas en un worktree de git, en la rama `agente/<ID>`. Tu tarea está en `doc
 
 ## Verificación
 
-<!-- Claude: adapta estos comandos al proyecto -->
+<!-- Codex: adapta estos comandos al proyecto -->
 - Pruebas: `npm test`
 - Tipos y lint: `npm run lint`
 - Compilación: `npm run build`

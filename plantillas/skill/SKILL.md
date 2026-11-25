@@ -5,8 +5,8 @@ description: {{DESCRIPCION}}
 
 # {{NOMBRE}}
 
-Qué resuelve en una o dos frases. Sigue la lógica de `orquestar-agentes`: Claude decide y valida; los agentes hacen
-lo delegable. `$S` = `~/.claude/skills/orquestar-agentes`.
+Qué resuelve en una o dos frases. Sigue la lógica de `orquestar-codex`: Codex decide y valida; los agentes hacen
+lo delegable. `$S` = `~/.codex/skills/orquestar-codex`. Llamadas mediante `orq <comando>`.
 
 ## Configuración del proyecto
 
@@ -21,8 +21,8 @@ Lo propio del proyecto vive en `<ruta en el repo del proyecto>`. Si no existe, c
 
 | Paso | Quién | Cómo |
 |---|---|---|
-| 1. … | Agente (`consultar.sh` / tarea) | … |
-| 2. … | Claude | … |
+| 1. … | Agente (`orq consultar` / tarea) | … |
+| 2. … | Codex | … |
 
 ## Validación
 
