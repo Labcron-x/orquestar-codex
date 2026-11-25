@@ -8,9 +8,15 @@ FUERTE="comandos libres (instalar, generar, migraciones), pruebas, docs, investi
 
 # --agent build trabaja directo; el agente orchestrator subdelega en modelos de pago y falla.
 agente_lanzar() {
-  opencode run ${OPENCODE_FLAGS:-} --agent build -m "$2" --format json "$1" < /dev/null
+  local tipo=build flags=()
+  if [ "${MODO:-escritura}" = lectura ]; then tipo=plan
+  else read -r -a flags <<< "${OPENCODE_FLAGS:-}"; fi
+  opencode run "${flags[@]}" --agent "$tipo" -m "$2" --format json "$1" < /dev/null
 }
 agente_reintentar() {
-  opencode run ${OPENCODE_FLAGS:-} --agent build -m "$2" ${3:+-s "$3"} --format json "$1" < /dev/null
+  local tipo=build flags=()
+  if [ "${MODO:-escritura}" = lectura ]; then tipo=plan
+  else read -r -a flags <<< "${OPENCODE_FLAGS:-}"; fi
+  opencode run "${flags[@]}" --agent "$tipo" -m "$2" ${3:+-s "$3"} --format json "$1" < /dev/null
 }
 agente_modelos() { opencode models opencode; }

@@ -1,4 +1,4 @@
-// Lee el registro de cualquier agente (agy, OpenCode, Gemini CLI, Qwen, Codex) y saca lo esencial.
+// Lee el registro de cualquier agente (agy, OpenCode, Gemini CLI, Qwen, Qoder, MiniMax Code, Codex).
 // Uso: node extraer.js <registro> [--sesion | --respuesta]
 const fs = require("fs");
 const [, , ruta, modo] = process.argv;
@@ -10,8 +10,8 @@ const denegadas = [], errores = [], comandos = [];
 function visitar(e) {
   if (!e || typeof e !== "object") return;
   if (Array.isArray(e)) return e.forEach(visitar);
-  // Sesión: agy conversation_id, OpenCode sessionID, Gemini/Qwen session_id, Codex thread_id.
-  for (const k of ["conversation_id", "sessionID", "session_id", "thread_id"])
+  // Sesión: agy conversation_id, OpenCode sessionID, MiniMax sessionId, Gemini/Qwen/Qoder session_id, Codex thread_id.
+  for (const k of ["conversation_id", "sessionID", "sessionId", "session_id", "thread_id"])
     if (typeof e[k] === "string" && e[k]) sesion = e[k];
   // Respuesta final.
   if (e.event === "result" && e.result) {
@@ -22,6 +22,13 @@ function visitar(e) {
   if (typeof e.response === "string" && e.response) respuesta = e.response;            // Gemini CLI / Qwen
   if (e.type === "result" && typeof e.result === "string") respuesta = e.result;        // resultado stream-json
   if (e.item && e.item.type === "agent_message" && e.item.text) respuesta = e.item.text; // Codex
+  if (e.type === "item.completed" && e.item && e.item.type === "agent_message" && typeof e.item.content === "string")
+    respuesta = e.item.content; // MiniMax Code
+  if (e.type === "exec.completed" && e.result) {
+    if (typeof e.result.output === "string" && e.result.output) respuesta = e.result.output;
+    if (e.result.status !== "succeeded")
+      errores.push("MiniMax Code: " + (e.result.status || "sin estado") + (e.result.error ? ": " + (typeof e.result.error === "string" ? e.result.error : JSON.stringify(e.result.error)) : ""));
+  }
   if (e.type === "assistant" && e.message && Array.isArray(e.message.content))
     e.message.content.forEach(c => c.type === "text" && c.text && (respuesta = c.text));
   // Comandos y errores.

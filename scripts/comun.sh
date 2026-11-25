@@ -10,6 +10,8 @@ normalizar_agente() {
     gemini|antigravity) echo agy ;;
     oc) echo opencode ;;
     gcli|gemini_cli) echo gemini-cli ;;
+    qodercli|qoder-cli) echo qoder ;;
+    minimax|minimax-code) echo mcode ;;
     *) echo "$1" ;;
   esac
 }
@@ -59,6 +61,20 @@ if [ -n "${1:-}" ]; then
   [ -z "${SIN_META:-}" ] && [ -f "$LOG.meta" ] && source "$LOG.meta"
 fi
 
+# El modo guardado se conserva al reintentar; ORQ_MODO lo puede forzar.
+determinar_modo() {
+  MODO=${ORQ_MODO:-${MODO:-}}
+  if [ -z "$MODO" ]; then
+    MODO=escritura
+    if [[ "$ID" = REV-* || "$ID" = INV-* ]] || grep -qxE '\*\*Modo:\*\* lectura[[:space:]]*' "$RAIZ/$TAREA"; then
+      MODO=lectura
+    fi
+  fi
+  case $MODO in lectura|escritura) export MODO ;;
+    *) echo "Modo inválido: $MODO (usa lectura o escritura)."; return 2 ;;
+  esac
+}
+
 # El agente no debe publicar nada: los remotos del worktree apuntan a una URL que no existe.
 # (agy con --dangerously-skip-permissions ignora su lista deny; esto lo frena igual.)
 bloquear_push() {
@@ -71,6 +87,25 @@ bloquear_push() {
 
 # Commit de lo que el agente dejó sin commit.
 commit_pendiente() {
+  if [ "${MODO:-escritura}" = lectura ]; then
+    local cambios cabeza archivos
+    cambios=$(git -C "$WT" status --porcelain) || return 1
+    cabeza=$(git -C "$WT" rev-parse HEAD) || return 1
+    if [ "$cabeza" != "$LECTURA_HEAD" ]; then
+      archivos=$(git -C "$WT" diff --name-only "$LECTURA_HEAD" "$cabeza") || return 1
+      cambios="${cambios}${cambios:+$'\n'}commits: ${archivos:-sin cambios de archivos} (HEAD cambió: $LECTURA_HEAD → $cabeza)"
+    fi
+    if [ -n "$cambios" ]; then
+      printf 'ALERTA: modo lectura violado: %s\n' "${cambios//$'\n'/; }" | tee -a "$LOG.jsonl"
+    fi
+    mkdir -p "$WT/$(dirname "$REPORTE")" || return 1
+    node "$DIR_SCRIPTS/extraer.js" "$LOG.jsonl" --respuesta > "$WT/$REPORTE" || return 1
+    git -C "$WT" add -- "$REPORTE" || return 1
+    if ! git -C "$WT" diff --cached --quiet -- "$REPORTE"; then
+      git -C "$WT" commit -q -m "docs(agentes): $ID reporte de lectura" -- "$REPORTE" || return 1
+    fi
+    return 0
+  fi
   [ -z "$(git -C "$WT" status --porcelain)" ] && return 0
   git -C "$WT" add -A
   git -C "$WT" commit -q -m "chore(agentes): $ID cambios de ${AGENTE:-agente} (${MODELO:-por defecto})" \
@@ -95,7 +130,7 @@ vigilar_agente() {  # <pid> <registro> [bytes previos: solo se revisa lo que esc
   local pid=$1 log=$2 desde=$(( ${3:-0} + 1 )) seg=${ORQ_VIGILAR_SEG:-300} ciclos=${ORQ_VIGILAR_CICLOS:-2}
   local previo=-1 quietos=0 t=0 tam motivo="" patron
   # Por partes: leer este código no debe confundirse con un bloqueo real del agente.
-  patron="out of ""credits|quota ""exceeded|quota ""reached|RESOURCE_""EXHAUSTED|insufficient_""quota|usage ""limit"
+  patron="out of ""credits|quota ""exceeded|quota ""reached|RESOURCE_""EXHAUSTED|insufficient_""quota|usage ""limit|limit_""exceeded"
   while kill -0 "$pid" 2>/dev/null; do
     sleep 15; t=$((t + 15))
     if tail -c +"$desde" "$log" 2>/dev/null | grep -qiE "$patron"; then
@@ -115,6 +150,9 @@ vigilar_agente() {  # <pid> <registro> [bytes previos: solo se revisa lo que esc
 
 ejecutar_agente() {  # <lanzar|nuevo|reintentar> <prompt> <modelo> [sesión] → salida a "$LOG.jsonl"
   local inicio=$SECONDS pid estado previo=0        # nuevo = sesión nueva (otro agente) agregada al mismo registro
+  if [ "${MODO:-escritura}" = lectura ] && [ -n "${WT:-}" ]; then
+    LECTURA_HEAD=$(git -C "$WT" rev-parse HEAD) || return 1
+  fi
   if [ "$1" != lanzar ] && [ -f "$LOG.jsonl" ]; then previo=$(wc -c < "$LOG.jsonl"); fi
   case $1 in
     lanzar) agente_lanzar "$2" "$3" > "$LOG.jsonl" 2>&1 & ;;

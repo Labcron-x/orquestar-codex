@@ -4,8 +4,9 @@ set -u
 source "$(dirname "$0")/comun.sh" "${1:?Uso: resumen.sh <ID>}"
 [ -d "$WT" ] || { echo "No existe $WT"; exit 2; }
 
-echo "== $ID · ${AGENTE:-?} · ${MODELO:-por defecto} · base ${BASE:-?}"
+echo "== $ID · ${AGENTE:-?} · ${MODELO:-por defecto} · base ${BASE:-?} · Modo: ${MODO:-escritura}"
 [ -f "$LOG.jsonl" ] && node "$DIR_SCRIPTS/extraer.js" "$LOG.jsonl"
+if [ -f "$LOG.jsonl" ]; then grep '^ALERTA: modo lectura violado:' "$LOG.jsonl" || true; fi
 echo "== Commits"
 git -C "$WT" log --oneline "${BASE:-HEAD}..HEAD"
 echo "== Archivos cambiados"
