@@ -33,7 +33,12 @@ Después inicia sesión una vez en cada CLI (`gemini`, `agy`; `qwen` solo con AP
 ### Convive con claude-orquestador
 
 No toca nada de `claude-orquestador`: nada en `~/.claude/`, ni `~/.config/orquestar-agentes/`. Ambos pueden coexistir
-en la misma máquina sin interferir entre sí.
+en la misma máquina sin interferir entre sí:
+
+- la skill solo se activa al escribir `$orquestar-codex` (`agents/openai.yaml`), así que un Codex que Claude lance como
+  trabajador nunca la carga;
+- los dos instaladores configuran igual los CLI de agentes (mismos MCP y reglas; solo agregan lo que falta);
+- los prompts llevan la marca `[orq-codex <repo>/<ID>]`, así el vigilante de uno no detiene agentes del otro.
 
 ## Usar
 
