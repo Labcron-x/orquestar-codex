@@ -92,13 +92,13 @@ Desde el repo. En `..` quedan `wt-<repo>-<ID>/` y `<repo>-<ID>.{jsonl,meta,setup
 
 ## 5. Documentos (PDF, Word, Excel, PowerPoint)
 
-- **Instalación opcional:** las librerías de documentos y LibreOffice/pandoc solo se instalan si se pasa
-  `--documentos` en `instalar.sh` (por defecto no se instalan).
+- **Instalación opcional:** por defecto no se instala nada de documentos. `instalar.sh --documentos` instala las
+  librerías de Python y `pandoc`; `--libreoffice` suma LibreOffice (~1 GB, para pasar a PDF y recalcular Excel).
 - **Agentes:** guía `guias/documentos.md` (se copia a `.agentes/` de cada worktree o consulta, y como skill
   `documentos` en agy y OpenCode), MCP `markitdown` (convierte PDF/docx/xlsx/pptx a Markdown), librerías `pypdf`,
-  `pdfplumber`, `reportlab`, `python-docx`, `openpyxl`, `pandas`, `python-pptx`, y LibreOffice + `pandoc`.
+  `pdfplumber`, `reportlab`, `python-docx`, `openpyxl`, `pandas`, `python-pptx`, `pandoc` y, si se instaló, LibreOffice.
 - **Codex valida** gastando poco: `python -m markitdown <archivo>` y leer solo lo necesario; Codex aprovecha sus
-  propios plugins y herramientas de documentos; en Excel, recalcular con LibreOffice y buscar
+  propios plugins y herramientas de documentos; en Excel, recalcular con LibreOffice (si está) y buscar
   `#REF!`/`#DIV/0!`/`#VALUE!`/`#NAME?`. No se usan skills de Anthropic.
 
 ## 6. Problemas conocidos

@@ -14,7 +14,7 @@ Todo con Python (`python`, o `python3` en macOS/Linux) y librerías libres ya in
 - **Rápido, a Markdown:** `python -m markitdown archivo.pdf` (también .docx, .xlsx, .pptx, .html, .csv). Con MCP:
   herramienta `markitdown` → `convert_to_markdown` con `file:///C:/ruta/absoluta`.
 - PDF con tablas o coordenadas: `pdfplumber` (`page.extract_text()`, `page.extract_tables()`).
-- PDF a texto simple: `pdftotext -layout archivo.pdf -`.
+- PDF a texto simple: `pypdf` (`page.extract_text()`), o `pdftotext -layout archivo.pdf -` si está instalado.
 
 ## Crear o editar
 
@@ -28,6 +28,8 @@ Todo con Python (`python`, o `python3` en macOS/Linux) y librerías libres ya in
 
 ## Convertir y verificar
 
+- LibreOffice es opcional (`instalar.sh --libreoffice`). Si no está instalado, no lo instales: deja el archivo en su
+  formato y anota en "Dudas" que falta convertir a PDF o recalcular.
 - LibreOffice (`soffice`; si no está en el PATH: Windows `C:\Program Files\LibreOffice\program\soffice.exe`, macOS
   `/Applications/LibreOffice.app/Contents/MacOS/soffice`):
   - a PDF: `soffice --headless --convert-to pdf --outdir <dir> <archivo>`
@@ -41,5 +43,5 @@ Todo con Python (`python`, o `python3` en macOS/Linux) y librerías libres ya in
 ## Antes de terminar
 
 1. Abre el archivo generado con `python -m markitdown` y comprueba que el contenido esté completo.
-2. En Excel, cero errores de fórmula tras recalcular.
+2. En Excel, cero errores de fórmula tras recalcular (si hay LibreOffice; si no, anótalo en "Dudas").
 3. Anota en el reporte: ruta del archivo, cómo lo verificaste y la salida (las últimas líneas).

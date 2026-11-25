@@ -112,7 +112,7 @@ NODE
 
 # El instalador se prueba con funciones exportadas: no instala ni configura nada real.
 : > "$TMP_PRUEBA/config"
-for opciones in '' '--documentos' '--documentos --sin-programas'; do
+for opciones in '' '--documentos' '--libreoffice'; do
   : > "$TMP_PRUEBA/instalacion"
   "$BASH" -c '
     codex() { :; }; setx() { :; }
@@ -130,15 +130,16 @@ for opciones in '' '--documentos' '--documentos --sin-programas'; do
   node - "$TMP_PRUEBA" "$opciones" <<'NODE'
 const fs = require('fs'), assert = require('assert');
 const [tmp, opciones] = process.argv.slice(2), log = fs.readFileSync(tmp + '/instalacion', 'utf8');
-const documentos = opciones.includes('--documentos');
+const documentos = opciones !== '';
 assert(log.includes('npm i -g @qoder-ai/qodercli'));
 assert(log.includes('npm i -g @minimax-ai/code'));
 assert.strictEqual(log.includes('-m pip install'), documentos);
-assert.strictEqual(log.includes('winget'), documentos && !opciones.includes('--sin-programas'));
+assert.strictEqual(log.includes('JohnMacFarlane.Pandoc'), documentos);
+assert.strictEqual(log.includes('TheDocumentFoundation.LibreOffice'), opciones === '--libreoffice');
 const config = log.split('\n').find(l => l.includes('configurar-agentes.js'));
 assert(config);
 assert.strictEqual(config.includes('--documentos'), documentos);
 NODE
 done
-echo 'Instalador: documentos opcionales y --sin-programas OK (sin instalaciones reales)'
+echo 'Instalador: --documentos sin LibreOffice y --libreoffice aparte OK (sin instalaciones reales)'
 echo 'Pruebas sin git OK'

@@ -12,13 +12,14 @@ Requisitos: git, Node.js, Python 3 y bash (en Windows, Git Bash).
 ```bash
 git clone https://github.com/Labcron-x/orquestar-codex.git ~/.codex/skills/orquestar-codex
 bash ~/.codex/skills/orquestar-codex/instalar.sh
-# opciones: --agentes "agy opencode gemini-cli qwen qoder mcode"   --documentos   --sin-programas
+# opciones: --agentes "agy opencode gemini-cli qwen qoder mcode"   --documentos   --libreoffice
 ```
 
 El instalador hace esto:
 
 - instala los CLI que falten (`agy`, `opencode`, `gemini`, `qwen`, `qodercli`, `mcode`);
-- instala las librerías de documentos y LibreOffice/pandoc solo si se pasa `--documentos` (por defecto no se instalan);
+- nada de documentos por defecto: con `--documentos` instala las librerías de Python y pandoc (livianos); con
+  `--libreoffice`, además LibreOffice (~1 GB, solo para pasar a PDF y recalcular fórmulas de Excel);
 - agrega a cada CLI los MCP: Playwright, Chrome DevTools, markitdown y Context7;
 - agrega las reglas que bloquean push, borrados, publicación y despliegues en los agentes;
 - instala la skill de documentos;
