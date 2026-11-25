@@ -4,6 +4,7 @@
 **Archivos permitidos:** <rutas o globs> (nada fuera de aquí)
 **Depende de:** <IDs o contrato>
 **Agente / modelo:** <agy · gemini-3.8-flash-medium> (lo elige Codex; sirve para reintentos y para el tablero)
+**Modo:** escritura <!-- o lectura para revisión (REV-*), investigación (INV-*) o auditoría -->
 
 ## Objetivo
 

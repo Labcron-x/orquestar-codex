@@ -2,6 +2,9 @@
 # Cópiala a ~/.config/orquestar-codex/config (instalar.sh lo hace) y ajústala. Es bash: VARIABLE="valor".
 # Todo es opcional: sin este archivo se usan los valores por defecto de agentes/*.sh.
 
+# ── Modo por defecto de las tareas ────────────────────────────────────────────────
+# ORQ_MODO="escritura"                  # modo por defecto de las tareas (escritura | lectura)
+
 # ── Agente preferido para cada función (lo lee Codex al repartir) ─────────────────
 ORQ_IMPLEMENTA="agy"          # código y UI
 ORQ_PARALELO="opencode"       # segunda línea: comandos libres, pruebas, docs, investigación
@@ -18,6 +21,10 @@ ORQ_CONSULTA="opencode"       # preguntas sin repo (orq consultar)
 # GEMINI_CLI_ESCALA=""
 # QWEN_MODELO=""
 # QWEN_ESCALA=""
+# QODER_MODELO=""                       # modelo de Qoder CLI (ver qodercli --list-models)
+# QODER_ESCALA=""                       # escala de modelos para reintentos con "+" en Qoder
+# MCODE_MODELO=""                       # modelo de MiniMax Code (minimax/<modelo>)
+# MCODE_ESFUERZO=""                     # nivel de esfuerzo/razonamiento para MiniMax Code
 
 # ── Permisos (decisión de cada persona) ───────────────────────────────────────────
 # Por defecto los agentes editan archivos pero piden permiso para comandos, y en modo
@@ -27,3 +34,4 @@ ORQ_CONSULTA="opencode"       # preguntas sin repo (orq consultar)
 # OPENCODE_FLAGS="--auto"                      # aprueba todo lo que no esté en su lista deny
 # GEMINI_CLI_APROBACION="yolo"                 # auto_edit (defecto) | yolo
 # QWEN_APROBACION="auto"                       # auto (defecto: un clasificador decide) | yolo
+# QODER_PERMISOS="auto"                        # permisos de Qoder CLI (auto | default)

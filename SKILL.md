@@ -1,14 +1,21 @@
 ---
 name: orquestar-codex
-description: Codex orquesta y delega en agentes de CLI (Antigravity/agy, OpenCode, Gemini CLI, Qwen Code) para ahorrar tokens y trabajar en paralelo. Usar en CUALQUIER proyecto o consulta con trabajo delegable, de código o no: implementar, probar en navegador, crear o revisar documentos (PDF, Word, Excel, PowerPoint), investigar, resumir, revisar código. Divide en tareas, elige agente y modelo (y los cambia o escala si falla), lanza en segundo plano en worktrees, valida con un resumen corto e integra. También al retomar con "$orquestar-codex Lee docs/agentes/ESTADO.md y continúa".
+description: Codex orquesta y delega en agentes de CLI (Antigravity/agy, OpenCode, Gemini CLI, Qwen Code, Qoder, MiniMax Code) para ahorrar tokens y trabajar en paralelo. Usar en CUALQUIER proyecto o consulta con trabajo delegable, de código o no: implementar, probar en navegador, crear o revisar documentos (PDF, Word, Excel, PowerPoint), investigar, resumir, revisar código. Divide en tareas, elige agente y modelo (y los cambia o escala si falla), lanza en segundo plano en worktrees, valida con un resumen corto e integra. También al retomar con "$orquestar-codex Lee docs/agentes/ESTADO.md y continúa".
 ---
 
 # Orquestar agentes con Codex
 
 Codex **no hace** lo que un agente pueda hacer: decide, reparte, valida e integra. Los agentes trabajan y se
 comunican por archivos, no por chat. Referencia (agentes, modelos, permisos, problemas): [ORQUESTACION.md](ORQUESTACION.md),
-solo la sección que necesites. Requiere acceso completo para crear worktrees fuera del repo y lanzar agentes con red
-(`codex --sandbox danger-full-access` o "Acceso completo" en la app); si un comando falla por sandbox, avisa al usuario.
+solo la sección que necesites.
+
+Codex trabaja en modo seguro: `codex --sandbox workspace-write --ask-for-approval on-request` (o en la app, "Pedir
+aprobación" / "Aprobar por mí"). `danger-full-access` queda como opción no recomendada. Codex lee todo y escribe dentro
+del proyecto; `.git` es de solo lectura en el sandbox, por lo que Codex **nunca** corre `git add/commit/merge/push`
+directo. Lo que sale del proyecto o toca `.git` (crear worktrees, lanzar agentes, commits, merges) va por `orq`, que
+Codex corre **pidiendo permisos elevados** (fuera del sandbox) con una justificación corta. La primera vez el usuario
+aprueba con "no volver a preguntar" y Codex guarda la regla en `~/.codex/rules/default.rules`. Leer, `git status`,
+`git diff`, `git log` y editar tareas o `ESTADO.md` van dentro del sandbox.
 
 Carpeta de la skill: `$S` = `~/.codex/skills/orquestar-codex` (o `$CODEX_HOME/skills/orquestar-codex`).
 Entrada única: `orq <comando> [args]`. Escribe la ruta completa en cada llamada (las variables no persisten):
@@ -34,22 +41,26 @@ los agentes usan el MCP `chrome-devtools` (consola, red, rendimiento) y `playwri
 1. Si existe `docs/agentes/ESTADO.md`, léelo y sigue desde su "Siguiente paso". No leas chats anteriores.
 2. Si no existe, prepara el repo **una vez**: copia `$S/plantillas/ESTADO.md` a `docs/agentes/ESTADO.md` y llena "Notas
    del proyecto" mirando solo `package.json`/README/AGENTS.md; si no hay `AGENTS.md`, créalo desde
-   `$S/plantillas/AGENTS.md` con los comandos de verificación del proyecto; crea `docs/agentes/{tareas,reportes}/`; haz
-   commit.
+   `$S/plantillas/AGENTS.md` con los comandos de verificación del proyecto; crea `docs/agentes/{tareas,reportes}/`; guarda
+   con `orq guardar "preparar orquestación"`.
 
 ## Repartir
 
-Jerarquía de inteligencia: **Codex (orquestador) > agy / OpenCode / Gemini CLI / Qwen**.
+Jerarquía de inteligencia: **Codex (orquestador) > agy / OpenCode / Gemini CLI / Qwen / Qoder / MiniMax Code**.
 
 | Función | Agente (config: `ORQ_*`) |
 |---|---|
 | **Tareas complejas**: algoritmos, concurrencia, seguridad, dinero, depuración difícil, refactors grandes, backend difícil, arquitectura | `agy` con modelo alto de su escala (`ORQ_COMPLEJO="agy"`); Codex revisa a fondo y, si no sale, lo resuelve Codex |
 | Implementar código y UI, pruebas de navegador | `agy` (`ORQ_IMPLEMENTA`) |
 | En paralelo: comandos libres, migraciones, pruebas, documentos, docs | `opencode` (`ORQ_PARALELO`) |
+| Implementar en paralelo o sin cuota de agy/OpenCode | `qoder`, `mcode` (MiniMax Code: sin sandbox, no usar para lectura delicada) |
 | Revisión cruzada del diff de otro agente (`REV-<ID>`, sin editar código) | `opencode` (`ORQ_REVISA`) |
 | Consultas e investigación | `opencode` con Context7 (`ORQ_CONSULTA`) |
-| Se acabó la cuota o están ocupados | `gemini-cli`, `qwen` |
+| Se acabó la cuota o están ocupados | `gemini-cli`, `qwen`, `qoder`, `mcode` |
 
+- Modo de tarea: **escritura** para implementar; **lectura** (`**Modo:** lectura` en la tarea, o prefijos `REV-`/`INV-`)
+  para revisiones cruzadas, investigación y auditorías. En modo lectura el agente arranca en solo lectura real y no
+  puede modificar el worktree.
 - Codex define **antes** los contratos compartidos (tipos, API, esquema) y nunca deja dos tareas en paralelo tocando
   los mismos archivos. Lo delicado (dinero, auth, seguridad, datos personales, migraciones) lo revisa Codex a fondo.
 - Modelo: el más barato que alcance (ORQUESTACION.md § 2). En la tarea puedes sugerir agente y modelo.
@@ -58,8 +69,8 @@ Jerarquía de inteligencia: **Codex (orquestador) > agy / OpenCode / Gemini CLI 
 
 ## Ciclo por tarea
 
-1. **Tarea:** `docs/agentes/tareas/<ID>.md` desde `$S/plantillas/tarea.md`: objetivo, archivos permitidos, contrato,
-   criterios y verificación. Corta: el agente no ve esta conversación.
+1. **Tarea:** `docs/agentes/tareas/<ID>.md` desde `$S/plantillas/tarea.md`: objetivo, modo (`escritura` o `lectura`),
+   archivos permitidos, contrato, criterios y verificación. Corta: el agente no ve esta conversación.
 2. **Lanzar en segundo plano** (Codex no recibe aviso al terminar un proceso):
    ```bash
    orq fondo lanzar <agente> <ID> [modelo|-] [rama-base]
@@ -78,15 +89,17 @@ Jerarquía de inteligencia: **Codex (orquestador) > agy / OpenCode / Gemini CLI 
    registro crezca. Si no crece en 2 revisiones (10 min) o hay bloqueo de créditos/cuota, detienen el agente, imprimen
    `ALERTA: agente colgado (...)` y salen con código 124. Al ver la ALERTA, reintenta con otro modelo/agente.
 4. **Validar** con el resumen (no abras el registro): reporte, commits y `diff --stat` dentro de lo permitido,
-   denegadas, **ALERTA** de push, cambios sin commit. Corre **tú** la verificación en el worktree. Documentos:
-   ORQUESTACION.md § 5.
+   denegadas, **ALERTA** de push o de modo lectura violado (`ALERTA: modo lectura violado: <archivos>`), cambios sin
+   commit. Corre **tú** la verificación en el worktree. Documentos: ORQUESTACION.md § 5.
 5. **Si falla**, en segundo plano y esperar con `orq esperar-fondo`:
    ```bash
    orq fondo reintentar <ID> "<error concreto>" [modelo|+|-] [agente]
    ```
    Escalado en `reintentar`: mismo modelo (`-`) una vez → `+` (siguiente modelo de la escala) → otro agente
    (4.º argumento, mismo worktree) → `agy` con el modelo más alto de su escala → Codex lo resuelve él mismo.
-6. **Integrar:** `git merge --no-ff agente/<ID>` en la rama base, actualiza el tablero de ESTADO.md y `orq limpiar <ID>`.
+6. **Integrar:** `orq integrar <ID>` (merge `--no-ff` de `agente/<ID>` en la rama base y limpieza; si hay conflicto
+   aborta, lista los archivos y sale con 1). Actualiza el tablero de ESTADO.md. Para conservar el worktree, usa
+   `orq integrar <ID> --sin-limpiar`.
 
 ## Esperas externas (CI, deploy, servidores)
 
@@ -108,8 +121,8 @@ orq esperar "<qué se espera>" <plazo_seg> <comando de chequeo...>
 
 ## Entre tareas
 
-- Al cerrar cada lote: ESTADO.md al día (tablero + siguiente paso concreto) y commit, para que cualquier sesión retome
-  desde ahí. Revisa `ls ..`: no deben quedar `wt-*` integrados.
+- Al cerrar cada lote: ESTADO.md al día (tablero + siguiente paso concreto) y `orq guardar "<mensaje>"`, para que
+  cualquier sesión retome desde ahí. Revisa `ls ..`: no deben quedar `wt-*` integrados.
 - Encadena el siguiente paso sin preguntar, **salvo** si toca un servidor, producción o despliegue; si necesita una
   decisión del usuario; o si no está claro. Ahí te detienes y preguntas.
 - Si el usuario quiere cortar: espera a los agentes en curso, deja ESTADO.md al día y dile que retome con:
