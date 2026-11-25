@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Pruebas sin git, instalaciones ni agentes reales. Uso: bash scripts/probar-cx3.sh
+# Pruebas sin git, instalaciones ni agentes reales. Uso: bash scripts/pruebas.sh
 set -eu
 DIR_SKILL=$(cd "$(dirname "$0")/.." && pwd)
 TMP_PRUEBA=$(mktemp -d)

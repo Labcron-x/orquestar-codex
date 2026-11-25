@@ -55,7 +55,7 @@ jobs:
           for f in scripts/*.js; do node --check "$f" || exit 1; done
 
       - name: Modo lectura, adaptadores y documentos opcionales (sin git)
-        run: bash scripts/probar-cx3.sh
+        run: bash scripts/pruebas.sh
 
   # 3. La skill carga: frontmatter válido y cada adaptador define lo que piden los scripts.
   skill:
