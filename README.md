@@ -76,14 +76,41 @@ $orquestar-codex <lo que quieres hacer>
 $orquestar-codex Lee docs/agentes/ESTADO.md y continúa con el siguiente paso.
 ```
 
-## Consumo
+## Consumo (telemetría)
 
-`orq consumo [días|todo]` muestra tokens, caché, fallos, tiempo y costo por agente y modelo (7 días por defecto).
-También suma todas las sesiones de Codex de esta PC y muestra el porcentaje usado del límite de ChatGPT.
-`orq resumen <ID>` incluye el consumo de la tarea.
+Cada vez que un agente trabaja (tarea, reintento o consulta), el orquestador anota cuántos tokens gastó, con qué
+modelo, si falló y cuánto tardó. Para verlo:
 
-El registro queda en `~/.local/share/orquestar-codex/consumo.jsonl`. Puedes cambiar la ruta con `ORQ_CONSUMO`
-o desactivarlo con `ORQ_CONSUMO=off` en tu config. El costo solo aparece si el CLI lo informa; no se estima.
+- dentro de Codex: pregunta "¿cuánto llevo consumido?" (Codex corre `orq consumo`);
+- en tu terminal: `bash ~/.codex/skills/orquestar-codex/scripts/orq.sh consumo [días|todo]` (7 días por defecto).
+
+```
+Agentes
+Agente      Modelo                 Ejec.  Fallos (codigo≠0)  Entrada  Caché  Salida  Razon.  Costo US$  Tiempo (min)
+gemini-cli  gemini-3.8-flash           1                  0    12.0k   3.0k     800       0          —           2.0
+gemini-cli  TOTAL                      1                  0    12.0k   3.0k     800       0          —           2.0
+opencode    opencode/big-pickle        2                  1   121.3k  84.5k     974    3.8k     0.0000          11.6
+opencode    TOTAL                      2                  1   121.3k  84.5k     974    3.8k     0.0000          11.6
+
+Codex (orquestador): todas las sesiones de Codex de esta PC con tokens en el periodo.
+Modelo       Sesiones  Entrada  Caché  Salida  Razon.
+gpt-6.1-sol         5     5.0M   4.7M   78.0k   28.0k
+Límite de ChatGPT (plan team): 24 % de la ventana de 5 h (se renueva 14:58) · 7 % semanal (se renueva 27/11 16:40)
+```
+
+| Columna | Qué es |
+|---|---|
+| Ejec. / Fallos | Veces que se usó ese agente y modelo, y cuántas terminaron con error o detenidas por el vigilante |
+| Entrada / Caché | Tokens que leyó el modelo; Caché es la parte que salió de caché (más barata o gratis) |
+| Salida / Razon. | Tokens que escribió y tokens de razonamiento interno |
+| Costo US$ | Solo si el CLI lo informa (OpenCode sí; Qwen y Qoder si lo dan). `—` = el CLI no lo informa. No se estiman precios |
+| Codex | Tokens por modelo de todas las sesiones de Codex de esta PC (también otros proyectos) y % usado del límite de ChatGPT |
+
+- `orq resumen <ID>` muestra además el consumo de esa tarea.
+- Codex revisa el consumo al cerrar cada lote: si un agente acumula fallos o Codex pasa del 80 % de su ventana,
+  reparte a otros agentes.
+- El registro queda en `~/.local/share/orquestar-codex/consumo.jsonl` (un JSON por ejecución). En tu config puedes
+  cambiar la ruta con `ORQ_CONSUMO="<ruta>"` o apagarlo con `ORQ_CONSUMO="off"`.
 
 ## Personalizar
 
@@ -114,7 +141,7 @@ Por ahora no hay skills adicionales en el equipo. Para crear una: `orq nueva-ski
 | `plantillas/skill/` | Esqueleto de una skill nueva (`orq nueva-skill`) |
 | `ORQUESTACION.md` | Referencia: agentes, modelos, scripts, tipos de tarea, documentos, problemas |
 | `agentes/*.sh` | Un adaptador por CLI (`agy`, `opencode`, `gemini-cli`, `qwen`, `qoder`, `mcode`) |
-| `scripts/` | `orq.sh`, scripts de agentes, fondo, esperar, resumen, limpiar y configuración |
+| `scripts/` | `orq.sh`, scripts de agentes, fondo, esperar, resumen, consumo, limpiar y configuración |
 | `plantillas/` | `AGENTS.md`, `ESTADO.md` y tarea para cada repo |
 | `guias/documentos.md` | Guía de PDF/Word/Excel/PowerPoint para los agentes |
 
