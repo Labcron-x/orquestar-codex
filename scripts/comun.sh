@@ -148,6 +148,21 @@ vigilar_agente() {  # <pid> <registro> [bytes previos: solo se revisa lo que esc
   done
 }
 
+registrar_consumo() {  # <tipo> <modelo pedido> <estado> <segundos> <bytes previos>
+  [ "${ORQ_CONSUMO:-}" = off ] && return 0
+  node - "$DIR_SCRIPTS/extraer.js" "$LOG.jsonl" "${ORQ_CONSUMO:-$HOME/.local/share/orquestar-codex/consumo.jsonl}" \
+    "${REPO:-consulta}" "${ID:-${ORQ_CONSULTA_NOMBRE:-}}" "$1" "${AGENTE:-}" "${2:-${MODELO_DEF:-predeterminado}}" "$3" "$4" "$5" >/dev/null 2>&1 <<'NODE' || :
+const fs = require('fs'), path = require('path'), {execFileSync} = require('child_process');
+const [extraer, log, destino, repo, id, tipo, agente, pedido, codigo, seg, previo] = process.argv.slice(2);
+const usos = JSON.parse(execFileSync(process.execPath, [extraer, log, '--uso', '--desde', previo], {encoding: 'utf8'}));
+const filas = usos.length ? usos : [{entrada: 0, cache: 0, salida: 0, razonamiento: 0, costo: null, sin_datos: true}];
+const fecha = new Date().toISOString();
+fs.mkdirSync(path.dirname(destino), {recursive: true});
+fs.appendFileSync(destino, filas.map(u => JSON.stringify({fecha, repo, id: id || path.basename(path.dirname(log)),
+  tipo, agente, ...u, modelo: u.modelo || pedido || 'predeterminado', codigo: Number(codigo), seg: Number(seg)})).join('\n') + '\n');
+NODE
+}
+
 ejecutar_agente() {  # <lanzar|nuevo|reintentar> <prompt> <modelo> [sesión] → salida a "$LOG.jsonl"
   local inicio=$SECONDS pid estado previo=0        # nuevo = sesión nueva (otro agente) agregada al mismo registro
   if [ "${MODO:-escritura}" = lectura ] && [ -n "${WT:-}" ]; then
@@ -161,5 +176,6 @@ ejecutar_agente() {  # <lanzar|nuevo|reintentar> <prompt> <modelo> [sesión] →
   esac
   pid=$!
   if vigilar_agente "$pid" "$LOG.jsonl" "$previo"; then wait "$pid"; estado=$?; else wait "$pid" 2>/dev/null; estado=124; fi
+  registrar_consumo "$1" "$3" "$estado" "$((SECONDS - inicio))" "$previo" 2>/dev/null || :
   echo "Código de salida: $estado · $(( (SECONDS - inicio) / 60 )) min"
 }

@@ -76,6 +76,15 @@ $orquestar-codex <lo que quieres hacer>
 $orquestar-codex Lee docs/agentes/ESTADO.md y continúa con el siguiente paso.
 ```
 
+## Consumo
+
+`orq consumo [días|todo]` muestra tokens, caché, fallos, tiempo y costo por agente y modelo (7 días por defecto).
+También suma todas las sesiones de Codex de esta PC y muestra el porcentaje usado del límite de ChatGPT.
+`orq resumen <ID>` incluye el consumo de la tarea.
+
+El registro queda en `~/.local/share/orquestar-codex/consumo.jsonl`. Puedes cambiar la ruta con `ORQ_CONSUMO`
+o desactivarlo con `ORQ_CONSUMO=off` en tu config. El costo solo aparece si el CLI lo informa; no se estima.
+
 ## Personalizar
 
 Tu config personal está en `~/.config/orquestar-codex/config` (ver `config.ejemplo`). Ahí defines:
