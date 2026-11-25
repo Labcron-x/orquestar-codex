@@ -1,0 +1,6 @@
+interface:
+  display_name: "Orquestar agentes"
+  short_description: "Codex reparte el trabajo entre agentes de CLI y valida"
+  default_prompt: "Usa $orquestar-codex para repartir esta tarea entre los agentes de CLI."
+policy:
+  allow_implicit_invocation: false

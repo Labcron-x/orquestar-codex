@@ -1,7 +1,6 @@
 name: Validación del orquestador
 
 # Todo cambio entra por PR a main. Este pipeline debe quedar en verde para integrar.
-# Runner self-hosted en el servidor OCI (/home/opc/actions-runner-orquestador, etiqueta "orquestador").
 on:
   pull_request:
     branches: [main]
@@ -21,16 +20,12 @@ jobs:
   # 1. Detección de secretos: la skill se clona en el equipo de cada persona.
   gitleaks:
     name: Gitleaks (Secret Scanning)
-    runs-on: [self-hosted, orquestador]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout del repositorio
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      # Runner self-hosted compartido: una ejecución cortada deja /tmp/gitleaks.tmp y la acción falla.
-      - name: Limpiar descarga previa de Gitleaks
-        run: rm -f /tmp/gitleaks.tmp
 
       - name: Ejecutar Gitleaks
         uses: gitleaks/gitleaks-action@v2
@@ -40,7 +35,7 @@ jobs:
   # 2. Sintaxis y errores de los scripts (bash y Node).
   scripts:
     name: Scripts (bash, ShellCheck, Node)
-    runs-on: [self-hosted, orquestador]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout del repositorio
         uses: actions/checkout@v4
@@ -49,7 +44,7 @@ jobs:
         run: |
           for f in instalar.sh scripts/*.sh agentes/*.sh; do bash -n "$f" || exit 1; done
 
-      # En Docker, igual que Semgrep en ucvmas: no hace falta instalar ShellCheck en el servidor.
+      # En Docker para usar la misma versión de ShellCheck.
       - name: ShellCheck (solo errores)
         run: |
           docker run --rm -v "$PWD:/mnt" -w /mnt koalaman/shellcheck:stable \
@@ -62,7 +57,7 @@ jobs:
   # 3. La skill carga: frontmatter válido y cada adaptador define lo que piden los scripts.
   skill:
     name: Estructura de la skill
-    runs-on: [self-hosted, orquestador]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout del repositorio
         uses: actions/checkout@v4
@@ -70,10 +65,13 @@ jobs:
       - name: Frontmatter de SKILL.md
         run: |
           head -1 SKILL.md | grep -qx -- '---'
-          grep -q '^name: orquestar-agentes$' SKILL.md
+          grep -q '^name: orquestar-codex$' SKILL.md
           grep -q '^description: ' SKILL.md
 
-      # Sin -e: los adaptadores hacen BIN=$(command -v <cli>) y el servidor no tiene los CLI instalados.
+      - name: Invocación explícita de la skill
+        run: grep -Eq '^  allow_implicit_invocation: false$' agents/openai.yaml
+
+      # Sin -e: los adaptadores hacen BIN=$(command -v <cli>) y el runner no tiene los CLI instalados.
       - name: Adaptadores de agentes
         run: |
           set +e

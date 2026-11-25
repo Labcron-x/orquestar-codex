@@ -2,6 +2,7 @@
 # Uso: consultar.sh <agente> "<pregunta o encargo>" [modelo] [archivo...]
 # Para consultas sin repo: investigar, resumir documentos, comparar opciones, leer un PDF/Excel y responder.
 # Corre en una carpeta temporal (copia ahí los archivos que pases) e imprime solo la respuesta final.
+# Para no bloquear, usa fondo.sh.
 set -u
 source "$(dirname "$0")/comun.sh" ""
 cargar_agente "${1:?Uso: consultar.sh <agente> \"<pregunta>\" [modelo] [archivo...]}" || exit $?
@@ -17,7 +18,7 @@ for a in "$@"; do cp -r "$a" "$DIR/" || exit 2; done
 LOG="$DIR/registro"
 
 cd "$DIR" || exit 2
-PROMPT="$PREGUNTA
+PROMPT="[orq-codex consulta/${ORQ_CONSULTA_NOMBRE:-$(basename "$DIR")}] $PREGUNTA
 
 Trabaja dentro de este directorio. Los archivos de entrada están aquí. Para documentos (PDF, Word, Excel, PowerPoint) sigue .agentes/documentos.md. Responde en español, breve y con fuentes si investigaste en la web. No modifiques nada fuera de este directorio."
 ejecutar_agente lanzar "$PROMPT" "$MODELO" >&2
