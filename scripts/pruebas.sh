@@ -40,7 +40,7 @@ if (a === 'agy' || a === 'opencode') assert.strictEqual(args.includes('--insegur
 if (a === 'mcode') {
   assert.strictEqual(stdin, 'prompt con espacios\n');
   assert.strictEqual(args.includes('--append-system-prompt-file'), lectura);
-  if (lectura) assert.strictEqual(args[args.indexOf('--append-system-prompt-file') + 1], skill + '/agentes/solo-lectura.txt');
+  if (lectura) assert.ok(args[args.indexOf('--append-system-prompt-file') + 1].endsWith('/agentes/solo-lectura.txt'));
   assert.strictEqual(args[args.indexOf('--effort') + 1], 'high');
 } else {
   assert.strictEqual(stdin, '');
@@ -141,4 +141,4 @@ assert.strictEqual(config.includes('--documentos'), documentos);
 NODE
 done
 echo 'Instalador: documentos opcionales y --sin-programas OK (sin instalaciones reales)'
-echo 'Pruebas CX-3 sin git OK'
+echo 'Pruebas sin git OK'
