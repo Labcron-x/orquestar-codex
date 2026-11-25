@@ -121,6 +121,8 @@ orq esperar "<qué se espera>" <plazo_seg> <comando de chequeo...>
 
 ## Entre tareas
 
+- Corre `orq consumo` al cerrar un lote o si el usuario pregunta por gasto. Si un agente acumula fallos o Codex
+  pasa del 80 % de su ventana, prefiere otros agentes.
 - Al cerrar cada lote: ESTADO.md al día (tablero + siguiente paso concreto) y `orq guardar "<mensaje>"`, para que
   cualquier sesión retome desde ahí. Revisa `ls ..`: no deben quedar `wt-*` integrados.
 - Encadena el siguiente paso sin preguntar, **salvo** si toca un servidor, producción o despliegue; si necesita una

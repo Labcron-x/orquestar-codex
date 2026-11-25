@@ -4,6 +4,7 @@
 
 # ── Modo por defecto de las tareas ────────────────────────────────────────────────
 # ORQ_MODO="escritura"                  # modo por defecto de las tareas (escritura | lectura)
+# ORQ_CONSUMO="off"   # o una ruta: dónde guardar el registro de consumo
 
 # ── Agente preferido para cada función (lo lee Codex al repartir) ─────────────────
 ORQ_IMPLEMENTA="agy"          # código y UI

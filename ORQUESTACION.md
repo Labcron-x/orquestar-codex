@@ -70,6 +70,7 @@ Desde el repo. En `..` quedan `wt-<repo>-<ID>/` y `<repo>-<ID>.{jsonl,meta,setup
 | `orq fondo <comando> [args]` | Lanza `lanzar`, `reintentar` o `consultar` en segundo plano desacoplado; imprime clave (`<repo>-<ID>` o `consulta-<nombre>`) y vuelve al instante |
 | `orq esperar-fondo [clave...] [--max SEG] [--todas]` | Espera sin tokens hasta que termine alguna (o todas) de las tareas en segundo plano (0 informó alguna, 124 plazo sin ninguna, 2 nada pendiente) |
 | `orq resumen <ID>` | Respuesta final, denegadas, ALERTA de push o modo lectura violado, errores, commits, diff, sin commit, reporte |
+| `orq consumo [días\|todo]` | Consumo por agente y modelo, todas las sesiones locales de Codex y límite de ChatGPT; 7 días por defecto |
 | `orq reintentar <ID> "<msg>" [modelo\|+\|-] [agente]` | Misma conversación (o agente nuevo en el mismo worktree), commit y resumen |
 | `orq guardar "<mensaje>" [rutas...]` | Commit fuera del sandbox pidiendo permisos elevados (`docs/agentes` y `AGENTS.md` por defecto) |
 | `orq integrar <ID> [--sin-limpiar]` | Merge `--no-ff` de `agente/<ID>` en la rama base y limpieza; si hay conflicto aborta, lista los archivos y sale con 1 |
@@ -114,6 +115,12 @@ Desde el repo. En `..` quedan `wt-<repo>-<ID>/` y `<repo>-<ID>.{jsonl,meta,setup
 - Ahorro: nunca leas el registro completo; si el resumen no basta, `tail -c 3000` del `.jsonl`.
 
 ## 7. Modo seguro y convivencia
+
+**Consumo:** cada intento y consulta agrega tokens y, si viene informado, costo en
+`~/.local/share/orquestar-codex/consumo.jsonl`. `ORQ_CONSUMO` cambia esa ruta; `ORQ_CONSUMO=off` desactiva el registro.
+El costo solo aparece si el CLI lo informa (OpenCode, Qwen/Qoder); el formato de MiniMax sigue sin confirmar.
+No hay tabla de precios. Codex se lee de `${CODEX_HOME:-~/.codex}/sessions/`: se cuentan los incrementos de tokens
+por modelo en sesiones modificadas en el periodo, incluidas las de otros proyectos de esta PC.
 
 **Modo seguro de Codex:** Codex trabaja con sandbox (`codex --sandbox workspace-write --ask-for-approval on-request` o
 "Pedir aprobación" / "Aprobar por mí" en la app). Ya no hace falta acceso completo (`danger-full-access` queda como
