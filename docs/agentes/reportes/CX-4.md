@@ -12,6 +12,20 @@
   reales ni se ejecutó git.
 - Omitido: dependencias nuevas, precios estimados, filtros y opciones adicionales al contrato.
 
+## Correcciones de revisión
+
+- Tablas alineadas con espacios; columnas numéricas a la derecha.
+- Las secciones sin filas muestran un aviso en lugar de una tabla vacía. Si no hay ningún dato, se conserva
+  el mensaje general de ausencia de registros.
+- Los totales por agente cuentan ejecuciones, fallos y tiempo una vez por clave `fecha+repo+id+tipo`.
+  Los tokens y costos siguen sumando todos los modelos de la ejecución.
+- Codex filtra por el timestamp de cada `token_count`. Los eventos anteriores al periodo actualizan el acumulado
+  de referencia sin sumarse; la fecha del archivo queda como respaldo si falta el timestamp.
+- El modelo de `init`, `system/init` y `assistant.message.model` se conserva para los eventos siguientes,
+  incluido el resultado de Gemini sin desglose por modelo.
+- Pruebas añadidas para los puntos 2, 3, 4 y 5, además de la alineación de columnas.
+  Esta revisión solo tocó `scripts/consumo.js`, `scripts/extraer.js`, `scripts/pruebas.sh` y este reporte.
+
 ## Archivos tocados
 
 - `scripts/extraer.js`
@@ -39,8 +53,10 @@ Verificación OK
 
 ```text
 Instalador: --documentos sin LibreOffice y --libreoffice aparte OK (sin instalaciones reales)
+Consumo: modelos de inicio y assistant conservados hasta result OK
 Consumo: formatos, totales, caché, costos, bytes y resumen OK
-Consumo: agrupación, periodo, diferencias por modelo y límites de Codex OK
+Consumo: columnas alineadas y totales por ejecución sin duplicar modelos OK
+Consumo: secciones vacías, timestamps por evento y límites de Codex OK
 Registro: JSON válido, consulta, modelo, sin datos, off y errores silenciosos OK
 Pruebas sin git OK
 ```

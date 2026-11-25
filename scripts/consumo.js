@@ -18,15 +18,22 @@ function leer(ruta) {
     try { const e = JSON.parse(l); return e && typeof e === 'object' ? [e] : []; } catch { return []; }
   }); } catch { return []; }
 }
-const agentes = new Map();
+const agentes = new Map(), totalesAgentes = new Map();
 const registro = process.env.ORQ_CONSUMO || path.join(os.homedir(), '.local/share/orquestar-codex/consumo.jsonl');
 if (registro !== 'off') for (const u of leer(registro)) {
   const fecha = Date.parse(u.fecha);
   if (!Number.isFinite(fecha) || fecha < desde || typeof u.agente !== 'string') continue;
-  if (!agentes.has(u.agente)) agentes.set(u.agente, new Map());
+  if (!agentes.has(u.agente)) {
+    agentes.set(u.agente, new Map());
+    totalesAgentes.set(u.agente, {...vacio(), ejecuciones: new Set()});
+  }
   const modelos = agentes.get(u.agente), modelo = u.modelo || 'predeterminado';
   if (!modelos.has(modelo)) modelos.set(modelo, vacio());
   sumar(modelos.get(modelo), {...u, ejec: 1, fallos: Number(u.codigo !== 0)});
+  const total = totalesAgentes.get(u.agente), clave = JSON.stringify([u.fecha, u.repo, u.id, u.tipo]);
+  const repetida = total.ejecuciones.has(clave);
+  sumar(total, {...u, ejec: repetida ? 0 : 1, fallos: Number(!repetida && u.codigo !== 0), seg: repetida ? 0 : u.seg});
+  total.ejecuciones.add(clave);
 }
 
 const codex = new Map();
@@ -41,7 +48,6 @@ function sesiones(dir) {
     if (!archivo.isFile() || !/^rollout-.*\.jsonl$/.test(archivo.name)) continue;
     let fecha;
     try { fecha = fs.statSync(ruta).mtimeMs; } catch { continue; }
-    if (fecha < desde) continue;
     let modelo = '?', anterior = {};
     for (const e of leer(ruta)) {
       const p = e.payload;
@@ -49,7 +55,7 @@ function sesiones(dir) {
       if (e.type === 'turn_context') { modelo = p.model || '?'; continue; }
       if (e.type !== 'event_msg' || p.type !== 'token_count') continue;
       const instante = Number.isFinite(Date.parse(e.timestamp)) ? Date.parse(e.timestamp) : fecha;
-      if (p.rate_limits && (p.rate_limits.primary || p.rate_limits.secondary) && instante >= fechaLimites) {
+      if (p.rate_limits && (p.rate_limits.primary || p.rate_limits.secondary) && instante >= desde && instante >= fechaLimites) {
         limites = p.rate_limits; fechaLimites = instante;
       }
       const uso = p.info && p.info.total_token_usage;
@@ -59,7 +65,7 @@ function sesiones(dir) {
         salida: 'output_tokens', razonamiento: 'reasoning_output_tokens'}))
         u[k] = Math.max(0, numero(uso[origen]) - numero(anterior[origen]));
       anterior = uso;
-      if (!claves.some(k => u[k])) continue;
+      if (instante < desde || !claves.some(k => u[k])) continue;
       if (!codex.has(modelo)) codex.set(modelo, {...vacio(), sesiones: new Set()});
       sumar(codex.get(modelo), u); codex.get(modelo).sesiones.add(ruta);
     }
@@ -70,23 +76,31 @@ sesiones(path.join(home, 'sessions'));
 if (!agentes.size && !codex.size && !limites) {
   console.log('Sin registros de consumo en este periodo.'); process.exit(0);
 }
-console.log('Agentes');
-console.log('Agente | Modelo | Ejec. | Fallos (codigo≠0) | Entrada | Caché | Salida | Razon. | Costo US$ | Tiempo (min)');
+function tabla(cabecera, filas, textos) {
+  const datos = [cabecera, ...filas].map(fila => fila.map(String));
+  const anchos = cabecera.map((_, i) => Math.max(...datos.map(fila => fila[i].length)));
+  for (const fila of datos) console.log(fila.map((valor, i) =>
+    i < textos ? valor.padEnd(anchos[i]) : valor.padStart(anchos[i])).join('  ').trimEnd());
+}
+const filasAgentes = [];
 function fila(agente, modelo, u) {
-  console.log([agente, modelo, u.ejec, u.fallos, ...claves.map(k => corto(u[k])),
-    u.costo === null ? '—' : u.costo.toFixed(4), (u.seg / 60).toFixed(1)].join(' | '));
+  filasAgentes.push([agente, modelo, u.ejec, u.fallos, ...claves.map(k => corto(u[k])),
+    u.costo === null ? '—' : u.costo.toFixed(4), (u.seg / 60).toFixed(1)]);
 }
 for (const [agente, modelos] of [...agentes].sort(([a], [b]) => a.localeCompare(b))) {
-  const total = vacio();
-  for (const [modelo, u] of [...modelos].sort((a, b) => b[1].entrada - a[1].entrada || a[0].localeCompare(b[0]))) {
-    fila(agente, modelo, u); sumar(total, u);
-  }
-  fila(agente, 'TOTAL', total);
+  for (const [modelo, u] of [...modelos].sort((a, b) => b[1].entrada - a[1].entrada || a[0].localeCompare(b[0])))
+    fila(agente, modelo, u);
+  fila(agente, 'TOTAL', totalesAgentes.get(agente));
 }
-console.log('\nCodex (orquestador): todas las sesiones de Codex de esta PC modificadas en el periodo.');
-console.log('Modelo | Sesiones | Entrada | Caché | Salida | Razon.');
-for (const [modelo, u] of [...codex].sort((a, b) => b[1].entrada - a[1].entrada))
-  console.log([modelo, u.sesiones.size, ...claves.map(k => corto(u[k]))].join(' | '));
+if (filasAgentes.length) {
+  console.log('Agentes');
+  tabla(['Agente', 'Modelo', 'Ejec.', 'Fallos (codigo≠0)', 'Entrada', 'Caché', 'Salida', 'Razon.', 'Costo US$', 'Tiempo (min)'], filasAgentes, 2);
+} else console.log('Agentes: sin registros en este periodo.');
+console.log('\nCodex (orquestador): todas las sesiones de Codex de esta PC con tokens en el periodo.');
+if (codex.size) tabla(['Modelo', 'Sesiones', 'Entrada', 'Caché', 'Salida', 'Razon.'],
+  [...codex].sort((a, b) => b[1].entrada - a[1].entrada).map(([modelo, u]) =>
+    [modelo, u.sesiones.size, ...claves.map(k => corto(u[k]))]), 1);
+else console.log('Codex: sin registros en este periodo.');
 if (limites) {
   const ventanas = ['primary', 'secondary'].flatMap(k => {
     const l = limites[k];

@@ -33,7 +33,10 @@ function cerrarUso() {
 function uso(e) {
   if (!e || typeof e !== "object") return;
   if (Array.isArray(e)) return e.forEach(uso);
-  if (e.event === "init" && e.init) modelo = e.init.model || null;
+  const vigente = e.event === "init" && e.init ? e.init.model
+    : e.type === "init" || (e.type === "system" && e.subtype === "init") ? e.model
+    : e.type === "assistant" && e.message ? e.message.model : null;
+  if (typeof vigente === "string" && vigente) modelo = vigente;
   const m = e.model || e.modelID || (e.part && (e.part.model || e.part.modelID)) || modelo;
   const agregar = (lista, u, mod = m, extra = 0, cache = u.cache_read_input_tokens, coste = null) => lista.push({
     modelo: typeof mod === "string" ? mod : null,
@@ -48,7 +51,7 @@ function uso(e) {
     agregar(totales, e.result.usage, m, 0, e.result.usage.cache_read_tokens);
   } else if (e.type === "result" && e.stats) {
     const modelos = e.stats.models;
-    for (const [nombre, u] of modelos && Object.keys(modelos).length ? Object.entries(modelos) : [[null, e.stats]])
+    for (const [nombre, u] of modelos && Object.keys(modelos).length ? Object.entries(modelos) : [[m, e.stats]])
       agregar(totales, u, nombre, 0, u.cached);
   } else if (e.type === "result" && e.usage) {
     const u = e.usage;
