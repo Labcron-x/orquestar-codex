@@ -2,8 +2,12 @@
 
 Skill de Codex derivada de claude-orquestador: aquí el que orquesta es Codex. Codex reparte el trabajo pesado y paralelo
 entre agentes de CLI: Antigravity (`agy`), OpenCode, Gemini CLI, Qwen Code, Qoder y MiniMax Code (`mcode`), o cualquier
-otro que agregues. Sirve para cualquier proyecto (código, pruebas de navegador, documentos) y para consultas sueltas
-(investigar, resumir, revisar archivos).
+otro que agregues. Codex piensa, reparte, valida e integra; los agentes hacen el trabajo, varios a la vez.
+
+Puedes orquestar todo lo que saben hacer esas IA: programar, revisar código, probar en el navegador, **trabajar en
+sistemas web con tu usuario** (llenar formularios o cargar registros en un administrador), crear documentos de oficina,
+investigar, generar imágenes y **hacer marketing**: preparar anuncios, publicarlos en Meta, Google Ads o TikTok con tu
+aprobación y seguir sus métricas. Detalle y ejemplos en [Qué puedes orquestar](#qué-puedes-orquestar).
 
 ## Instalar (cada persona del equipo)
 
@@ -75,6 +79,52 @@ Dentro de Codex:
 $orquestar-codex <lo que quieres hacer>
 $orquestar-codex Lee docs/agentes/ESTADO.md y continúa con el siguiente paso.
 ```
+
+## Qué puedes orquestar
+
+Pide el resultado en español; Codex decide quién hace cada parte, lanza a los agentes (varios a la vez si se puede),
+revisa lo que entregan y te informa.
+
+| Qué | Quién lo hace | Ejemplo |
+|---|---|---|
+| **Programar**: implementar, corregir, refactorizar, escribir pruebas | agy, OpenCode, Qoder o MiniMax, cada uno en su copia del repo (worktree); Codex valida e integra | `$orquestar-codex Agrega el login con Google y sus pruebas` |
+| **Revisar código** sin tocar nada (modo lectura) | un agente distinto del que lo escribió | `$orquestar-codex Revisa el último cambio del carrito` |
+| **Probar en el navegador** tu app o páginas públicas: recorrer flujos, capturas, errores de consola, red, rendimiento, vista móvil | agy u OpenCode con Playwright y Chrome DevTools, en un navegador propio | `$orquestar-codex Revisa en móvil que el inicio no tenga errores de consola` |
+| **Trabajar en un sistema con tu usuario**: administradores, portales, formularios con login (por ejemplo, cargar y corregir las carreras de un campus en el administrador del portal) | **Codex** con Chrome DevTools: abre una ventana, tú inicias sesión ahí y él llena, guarda y verifica. En paralelo, los agentes preparan lo que no necesita sesión: comparar listas, armar los datos, revisar la página pública | `$orquestar-codex Carga en el administrador del portal las carreras de chiclayo.json y verifica` |
+| **Documentos**: Word, Excel, PowerPoint y PDF (crear, llenar, resumir, convertir) | OpenCode u otro agente (requiere `instalar.sh --documentos`) | `$orquestar-codex Arma un Excel de inscritos por campus y un resumen en Word` |
+| **Investigar y consultar**: buscar en la web, comparar opciones, leer documentación, resumir archivos (sin repo) | OpenCode (Context7 para documentación) o Gemini CLI (búsqueda de Google) | `$orquestar-codex Compara tres pasarelas de pago para Perú` |
+| **Imágenes**: ilustraciones, fondos, maquetas | agy (genera imágenes) | `$orquestar-codex Genera 3 fondos sin personas para la portada` |
+| **Marketing: preparar piezas**: posts, anuncios, textos por red, UTM | agy (imágenes), OpenCode u otro agente (textos y UTM) | `$orquestar-codex Prepara 3 anuncios de admisión para Instagram con su UTM` |
+| **Marketing: publicar y crear campañas** en Meta (Facebook e Instagram), Google Ads o TikTok | **Codex**, solo con tu aprobación; las campañas se crean pausadas y las activas tú | `$orquestar-codex Crea pausada la campaña de admisión en Meta con esos 3 anuncios` |
+| **Métricas y seguimiento**: alcance, clics, conversiones, costo por resultado, reportes | Codex trae los datos de cada plataforma; los agentes los analizan y arman el reporte en Excel o PDF | `$orquestar-codex Arma el reporte semanal de Meta y Google Ads en Excel` |
+| **Muchas tareas a la vez** | varios agentes en segundo plano; Codex espera sin gastar tokens, valida e integra uno por uno | `$orquestar-codex Haz las tareas 1 a 5 del plan en paralelo` |
+
+Sobre el navegador con tu usuario:
+
+- **Tu contraseña nunca pasa por la IA:** tú inicias sesión en la ventana que abre Codex. Es un perfil aparte (no tu
+  Chrome) y se borra al cerrarla, así que la sesión no queda guardada.
+- **Por qué no lo hace un agente:** los agentes trabajan en segundo plano con navegadores aislados; no hay una ventana
+  donde puedas iniciar sesión, y una contraseña nunca va en una instrucción.
+
+Sobre marketing y publicidad:
+
+- **Publicar y gastar es solo con tu aprobación.** Los agentes nunca publican (sus reglas lo bloquean): preparan las
+  piezas y los reportes. Codex publica o crea la campaña cuando tú lo apruebas, y las campañas quedan pausadas hasta
+  que tú las activas, para que ninguna IA gaste presupuesto sola.
+- **Codex necesita acceso a cada plataforma**, por una de estas vías:
+  1. **API oficial con tu token** (lo más estable): Meta pide una app en Business Manager; Google Ads, un token de
+     desarrollador aprobado por Google; TikTok, una app aprobada en TikTok for Business.
+  2. **MCP conectado a Codex:** Google tiene MCP oficiales de solo lectura para Google Ads y Google Analytics (sirven
+     para métricas).
+  3. **Navegador con tu sesión**, como en un administrador: sirve para revisar métricas y campañas. Para crear campañas
+     es riesgoso (verificación en dos pasos, detección de bots, posible bloqueo de la cuenta).
+- **Los tokens son secretos:** van en tu config o en un archivo fuera del repo, nunca en un prompt ni en git.
+
+Todavía no viene incluido:
+
+- **video y 3D:** se pueden sumar conectando un MCP a los CLI (por ejemplo, Blender para 3D);
+- **conexiones de marketing:** ninguna plataforma viene conectada; se agrega cada una (token o MCP) cuando la necesites;
+- **ejecución programada:** correr sola cada cierto tiempo. Se arma aparte con el Programador de tareas y `codex exec`.
 
 ## Consumo (telemetría)
 

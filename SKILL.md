@@ -57,7 +57,16 @@ Jerarquía de inteligencia: **Codex (orquestador) > agy / OpenCode / Gemini CLI 
 | Revisión cruzada del diff de otro agente (`REV-<ID>`, sin editar código) | `opencode` (`ORQ_REVISA`) |
 | Consultas e investigación | `opencode` con Context7 (`ORQ_CONSULTA`) |
 | Se acabó la cuota o están ocupados | `gemini-cli`, `qwen`, `qoder`, `mcode` |
+| Imágenes (ilustraciones, fondos, maquetas) | `agy` (genera imágenes) |
+| Sistemas web con la sesión del usuario (administradores, portales, formularios con login) | **Codex**, no se delega (ver abajo) |
 
+- **Sistemas con la sesión del usuario:** los navegadores de los agentes son aislados y corren en segundo plano; nadie
+  puede iniciar sesión ahí. Hazlo tú con el MCP `chrome-devtools`: abre la página, pide al usuario que inicie sesión
+  en esa ventana y te avise, y nunca pidas ni escribas su contraseña. Delega en paralelo lo que no necesita sesión
+  (comparar listas, armar los datos, revisar la página pública) y verifica al final en la página.
+- **Marketing:** los agentes preparan piezas (imágenes con `agy`, textos, UTM) y analizan métricas. Publicar, crear
+  campañas o gastar presupuesto lo haces tú (por API, MCP o el navegador con la sesión del usuario), solo con su
+  aprobación explícita y con las campañas creadas en pausa. Los tokens van fuera del repo y de los prompts.
 - Modo de tarea: **escritura** para implementar; **lectura** (`**Modo:** lectura` en la tarea, o prefijos `REV-`/`INV-`)
   para revisiones cruzadas, investigación y auditorías. En modo lectura el agente arranca en solo lectura real y no
   puede modificar el worktree.
