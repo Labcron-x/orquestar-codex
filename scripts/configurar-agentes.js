@@ -95,12 +95,12 @@ if (hay("opencode")) {
 // Gemini CLI y Qwen Code
 if (hay("gemini")) mcpServers(path.join(HOME, ".gemini", "settings.json"), "gemini-cli");
 if (hay("qwen")) mcpServers(path.join(HOME, ".qwen", "settings.json"), "qwen");
-// Codex (TOML): agrega bloques [mcp_servers.x] que falten.
+// Codex, el orquestador (TOML): agrega bloques [mcp_servers.x] que falten.
 if (hay("codex")) {
-  const p = path.join(HOME, ".codex", "config.toml"); let s = existe(p) ? fs.readFileSync(p, "utf8") : "", n = 0;
-  const toml = v => "[" + v.map(x => `'${x}'`).join(", ") + "]";
-  for (const [k, v] of Object.entries(MCP)) if (!s.includes(`[mcp_servers.${k}]`)) {
-    s += `\n[mcp_servers.${k}]\ncommand = '${v.command}'\nargs = ${toml(v.args)}\n`; n++; }
+  const p = path.join(process.env.CODEX_HOME || path.join(HOME, ".codex"), "config.toml"); let s = existe(p) ? fs.readFileSync(p, "utf8") : "", n = 0;
+  const toml = v => JSON.stringify(v);
+  for (const [k, v] of Object.entries(MCP)) if (!new RegExp(`^\\s*\\[\\s*mcp_servers\\s*\\.\\s*(?:${k}|"${k}"|'${k}')\\s*(?:\\]|\\.)`, "m").test(s)) {
+    s += `\n[mcp_servers.${k}]\ncommand = ${toml(v.command)}\nargs = ${toml(v.args)}\n`; n++; }
   if (n) { respaldar(p); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, s); hecho.push(`codex: ${n} MCP en ${p}`); }
 }
 console.log(hecho.length ? hecho.map(h => "  · " + h).join("\n") : "  · Nada que cambiar: ya estaba configurado.");

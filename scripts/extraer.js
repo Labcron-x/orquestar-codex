@@ -20,7 +20,7 @@ function visitar(e) {
   }
   if (e.type === "text" && e.part && e.part.text) respuesta = e.part.text;              // OpenCode
   if (typeof e.response === "string" && e.response) respuesta = e.response;            // Gemini CLI / Qwen
-  if (e.type === "result" && typeof e.result === "string") respuesta = e.result;        // stream-json tipo Claude
+  if (e.type === "result" && typeof e.result === "string") respuesta = e.result;        // resultado stream-json
   if (e.item && e.item.type === "agent_message" && e.item.text) respuesta = e.item.text; // Codex
   if (e.type === "assistant" && e.message && Array.isArray(e.message.content))
     e.message.content.forEach(c => c.type === "text" && c.text && (respuesta = c.text));

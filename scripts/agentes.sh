@@ -12,6 +12,10 @@ for f in "$DIR_SKILL"/agentes/*.sh; do
   echo "  fuerte en: $FUERTE"
   [ -n "${1:-}" ] && [ "$estado" = instalado ] && { echo "  modelos:"; agente_modelos 2>&1 | grep -v autotitle | sed 's/^/    /' | head -40; }
 done
-# MCP obligatorio en Claude Code (lo pone instalar.sh): avisar si falta tras una actualización.
-grep -qs '"chrome-devtools"' "$HOME/.claude.json"   || echo "FALTA MCP chrome-devtools en Claude: claude mcp add -s user chrome-devtools -- npx -y chrome-devtools-mcp@latest"
 echo "Config personal: $CONFIG $([ -f "$CONFIG" ] && echo '(existe)' || echo '(no existe: ver config.ejemplo)')"
+if command -v codex >/dev/null 2>&1; then
+  version=$(codex --version 2>&1) || { echo "$version"; exit 1; }
+  echo "Orquestador: codex ${version#codex-cli } · skill en $DIR_SKILL"
+else
+  echo "FALTA codex: npm i -g @openai/codex"
+fi

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Uso: lanzar.sh <agente> <ID> [modelo] [rama-base]
-#   agente: agy | opencode | gemini-cli | qwen | codex   (ver agentes.sh)
+#   agente: agy | opencode | gemini-cli | qwen   (ver agentes.sh)
 #   modelo: vacío o "-" = el de por defecto del agente
-# Desde el repo. Correr con run_in_background: termina cuando el agente termina e imprime el resumen.
+# Desde el repo. Para no bloquear, usa fondo.sh. Termina con el resumen del agente.
 # SETUP="cmd" reemplaza la instalación de dependencias; SETUP=: la salta.
 set -u
 SIN_META=1 source "$(dirname "$0")/comun.sh" "${2:?Uso: lanzar.sh <agente> <ID> [modelo] [rama-base]}"
@@ -45,7 +45,7 @@ cd "$WT" || exit 2
   fi
 } > "$LOG.setup.log" 2>&1 || { echo "Falló la instalación ($LOG.setup.log):"; tail -20 "$LOG.setup.log"; exit 3; }
 
-PROMPT="Lee AGENTS.md y $TAREA y ejecuta la tarea dentro de este directorio. Si la tarea es de documentos (PDF, Word, Excel, PowerPoint), sigue .agentes/documentos.md. Corre la verificación que pide la tarea. Escribe el reporte en $REPORTE. No corras git: el commit se hace solo al terminar."
+PROMPT="$MARCA Lee AGENTS.md y la tarea $ID (archivo $ID.md en docs/agentes/tareas) y ejecútala dentro de este directorio. Si la tarea es de documentos (PDF, Word, Excel, PowerPoint), sigue .agentes/documentos.md. Corre la verificación que pide la tarea. Escribe el reporte en $REPORTE. No corras git: el commit se hace solo al terminar."
 
 echo "Lanzando $ID con $AGENTE (${MODELO:-modelo por defecto}) desde $BASE..."
 ejecutar_agente lanzar "$PROMPT" "$MODELO"

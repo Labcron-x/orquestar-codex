@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Crea el esqueleto de una skill nueva en skills/<nombre>/ desde plantillas/skill/.
 #
-#   bash ~/.claude/skills/orquestar-agentes/scripts/nueva-skill.sh <nombre-en-kebab> "<cuándo usarla>"
+#   bash ~/.codex/skills/orquestar-codex/scripts/nueva-skill.sh <nombre-en-kebab> "<cuándo usarla>"
 set -u
 [ $# -ge 2 ] || { echo "Uso: nueva-skill.sh <nombre-en-kebab> \"<cuándo usarla>\""; exit 2; }
 DIR_SKILL=$(cd "$(dirname "$0")/.." && pwd)

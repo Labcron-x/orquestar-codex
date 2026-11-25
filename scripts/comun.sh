@@ -1,7 +1,7 @@
 # Variables y funciones comunes. Uso: source comun.sh [ID]   (desde un repo git, salvo consultar.sh)
 DIR_SCRIPTS=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 DIR_SKILL=$(dirname "$DIR_SCRIPTS")
-CONFIG=${ORQ_CONFIG:-$HOME/.config/orquestar-agentes/config}
+CONFIG=${ORQ_CONFIG:-$HOME/.config/orquestar-codex/config}
 [ -f "$CONFIG" ] && source "$CONFIG"
 
 # Nombres viejos o cortos → adaptador en agentes/.
@@ -24,6 +24,17 @@ cargar_agente() {  # <nombre>
     echo "$AGENTE no está instalado. Instalar: $INSTALAR · Luego: $LOGIN"; return 3; }
 }
 
+# Los PID de fondo son nativos en Windows (Start-Process), y de bash en Unix.
+fondo_vivo() {  # <ruta sin extensión>
+  local pid
+  pid=$(cat "$1.pid" 2>/dev/null) || return 1
+  [[ "$pid" =~ ^[1-9][0-9]*$ ]] || return 1
+  case $OSTYPE in
+    msys*|cygwin*) ORQ_PID="$pid" powershell.exe -NoProfile -Command 'if (Get-Process -Id $env:ORQ_PID -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }' >/dev/null 2>&1 ;;
+    *) kill -0 "$pid" 2>/dev/null ;;
+  esac
+}
+
 # Siguiente modelo de la escala del agente (para "+").
 siguiente_modelo() {  # <modelo actual>
   local m siguiente=0
@@ -39,6 +50,7 @@ if [ -n "${1:-}" ]; then
   RAIZ=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null | sed 's#/\.git$##')
   [ -n "$RAIZ" ] || { echo "No estás en un repo git (para preguntas sin repo usa consultar.sh)"; exit 2; }
   REPO=$(basename "$RAIZ")
+  MARCA="[orq-codex $REPO/$ID]"
   PADRE=$(dirname "$RAIZ")
   WT="$PADRE/wt-$REPO-$ID"
   LOG="$PADRE/$REPO-$ID"
@@ -68,10 +80,10 @@ commit_pendiente() {
 # Vigilante sin tokens: cada ORQ_VIGILAR_SEG (300 s) mira si el registro del agente creció.
 # Si no crece en ORQ_VIGILAR_CICLOS revisiones seguidas (2 → 10 min), o el registro muestra un
 # bloqueo conocido (sin créditos o cuota), corta el agente y deja ALERTA.
-procesos_de_tarea() {  # <ID> → PIDs de Windows cuyo comando menciona la tarea (todo prompt de agente la cita)
-  powershell.exe -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object { \$_.CommandLine -match 'tareas/$1\.md' -and \$_.Name -ne 'powershell.exe' } | ForEach-Object { \$_.ProcessId }" 2>/dev/null | tr -d '\r'
+procesos_de_tarea() {  # <ID> → PIDs de Windows con la marca de este orquestador, repo y tarea.
+  ORQ_MARCA="[orq-codex $REPO/$1]" powershell.exe -NoProfile -Command 'Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match [regex]::Escape($env:ORQ_MARCA) -and $_.Name -ne "powershell.exe" } | ForEach-Object { $_.ProcessId }' 2>/dev/null | tr -d '\r'
 }
-detener_agente() {  # <pid de bash> [ID]: en Windows el árbol de bash no incluye al exe del agente; se busca por la tarea
+detener_agente() {  # <pid de bash> [ID]: en Windows se busca el exe del agente por la marca.
   local wp
   if [ -n "${2:-}" ] && command -v powershell.exe >/dev/null; then
     for wp in $(procesos_de_tarea "$2"); do taskkill //F //T //PID "$wp" >/dev/null 2>&1; done
@@ -81,11 +93,13 @@ detener_agente() {  # <pid de bash> [ID]: en Windows el árbol de bash no incluy
 }
 vigilar_agente() {  # <pid> <registro> [bytes previos: solo se revisa lo que escribe este intento]
   local pid=$1 log=$2 desde=$(( ${3:-0} + 1 )) seg=${ORQ_VIGILAR_SEG:-300} ciclos=${ORQ_VIGILAR_CICLOS:-2}
-  local previo=-1 quietos=0 t=0 tam motivo=""
+  local previo=-1 quietos=0 t=0 tam motivo="" patron
+  # Por partes: leer este código no debe confundirse con un bloqueo real del agente.
+  patron="out of ""credits|quota ""exceeded|quota ""reached|RESOURCE_""EXHAUSTED|insufficient_""quota|usage ""limit"
   while kill -0 "$pid" 2>/dev/null; do
     sleep 15; t=$((t + 15))
-    if tail -c +"$desde" "$log" 2>/dev/null | grep -qiE "out of credits|quota exceeded|quota reached|RESOURCE_EXHAUSTED|insufficient_quota|usage limit"; then
-      motivo="bloqueo conocido: $(tail -c +"$desde" "$log" | grep -oiE "out of credits|quota exceeded|quota reached|RESOURCE_EXHAUSTED|insufficient_quota|usage limit" | head -1)"
+    if tail -c +"$desde" "$log" 2>/dev/null | grep -qiE "$patron"; then
+      motivo="bloqueo conocido: $(tail -c +"$desde" "$log" | grep -oiE "$patron" | head -1)"
     elif [ $t -ge "$seg" ]; then
       t=0; tam=$(wc -c < "$log" 2>/dev/null || echo 0)
       if [ "$tam" -eq "$previo" ]; then quietos=$((quietos + 1)); else quietos=0; fi
