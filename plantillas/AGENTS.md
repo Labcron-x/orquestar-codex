@@ -1,4 +1,4 @@
-# Instrucciones para agentes (agy, OpenCode, Gemini CLI, Qwen)
+# Instrucciones para agentes (agy, OpenCode, Gemini CLI, Qwen, Qoder, MiniMax Code)
 
 Trabajas en un worktree de git, en la rama `agente/<ID>`. Tu tarea está en `docs/agentes/tareas/<ID>.md`.
 

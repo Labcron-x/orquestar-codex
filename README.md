@@ -1,24 +1,24 @@
 # codex-orquestador
 
 Skill de Codex: derivado de claude-orquestador; aquí orquesta Codex. Codex delega en agentes de CLI para hacer el trabajo
-pesado y paralelo. Los agentes son Antigravity (`agy`), OpenCode, Gemini CLI y Qwen Code (o cualquier otro que agregues).
-Sirve para cualquier proyecto (código, pruebas de navegador, documentos) y para consultas sueltas (investigar, resumir,
-revisar archivos).
+pesado y paralelo. Los agentes son Antigravity (`agy`), OpenCode, Gemini CLI, Qwen Code, Qoder y MiniMax Code (`mcode`)
+(o cualquier otro que agregues). Sirve para cualquier proyecto (código, pruebas de navegador, documentos) y para consultas
+sueltas (investigar, resumir, revisar archivos).
 
 ## Instalar (cada persona del equipo)
 
 Requisitos: git, Node.js, Python 3 y bash (en Windows, Git Bash).
 
 ```bash
-git clone <URL de tu repo> ~/.codex/skills/orquestar-codex
+git clone https://github.com/Labcron-x/orquestar-codex.git ~/.codex/skills/orquestar-codex
 bash ~/.codex/skills/orquestar-codex/instalar.sh
-# opciones: --agentes "agy opencode gemini-cli qwen"   --sin-programas
+# opciones: --agentes "agy opencode gemini-cli qwen qoder mcode"   --documentos   --sin-programas
 ```
 
 El instalador hace esto:
 
-- instala los CLI que falten (`agy`, `opencode`, `gemini`, `qwen`);
-- instala las librerías de documentos y LibreOffice/pandoc;
+- instala los CLI que falten (`agy`, `opencode`, `gemini`, `qwen`, `qodercli`, `mcode`);
+- instala las librerías de documentos y LibreOffice/pandoc solo si se pasa `--documentos` (por defecto no se instalan);
 - agrega a cada CLI los MCP: Playwright, Chrome DevTools, markitdown y Context7;
 - agrega las reglas que bloquean push, borrados, publicación y despliegues en los agentes;
 - instala la skill de documentos;
@@ -27,8 +27,8 @@ El instalador hace esto:
 
 Respalda cada archivo que toca como `*.bak-orq` y se puede correr varias veces.
 
-Después inicia sesión una vez en cada CLI (`gemini`, `agy`; `qwen` solo con API key de pago). OpenCode con modelos
-`opencode/*` no lo pide.
+Después inicia sesión una vez en cada CLI (`gemini`, `agy`, `qodercli login`, `mcode login`; `qwen` solo con API key de pago).
+OpenCode con modelos `opencode/*` no lo pide.
 
 ### Convive con claude-orquestador
 
@@ -42,11 +42,16 @@ en la misma máquina sin interferir entre sí:
 
 ## Usar
 
-En Codex (CLI o app con acceso completo):
+En Codex (CLI o app en modo seguro):
 
 ```bash
-codex --sandbox danger-full-access
+codex --sandbox workspace-write --ask-for-approval on-request
 ```
+
+O en la app, elige "Pedir aprobación" ("Aprobar por mí" también sirve). `danger-full-access` queda solo como opción
+no recomendada. Codex lee todo y escribe dentro del proyecto; todo lo que sale del proyecto o toca `.git` (crear
+worktrees, lanzar agentes, commits, merges) va por `orq`, pidiendo permisos elevados fuera del sandbox con justificación
+corta (la primera vez apruebas con "no volver a preguntar").
 
 Dentro de Codex:
 
@@ -83,10 +88,16 @@ Por ahora no hay skills adicionales en el equipo. Para crear una: `orq nueva-ski
 | `skills/<nombre>/` | Otras skills del equipo (se instalan con `orq instalar-skills`) |
 | `plantillas/skill/` | Esqueleto de una skill nueva (`orq nueva-skill`) |
 | `ORQUESTACION.md` | Referencia: agentes, modelos, scripts, tipos de tarea, documentos, problemas |
-| `agentes/*.sh` | Un adaptador por CLI (`agy`, `opencode`, `gemini-cli`, `qwen`) |
+| `agentes/*.sh` | Un adaptador por CLI (`agy`, `opencode`, `gemini-cli`, `qwen`, `qoder`, `mcode`) |
 | `scripts/` | `orq.sh`, scripts de agentes, fondo, esperar, resumen, limpiar y configuración |
 | `plantillas/` | `AGENTS.md`, `ESTADO.md` y tarea para cada repo |
 | `guias/documentos.md` | Guía de PDF/Word/Excel/PowerPoint para los agentes |
+
+## Créditos
+
+Derivado de `claude-orquestador` (donde orquestaba Claude Code).
+El modo lectura, el esquema de revisión y los adaptadores de Qoder y MiniMax Code están inspirados en
+[delegate-skills](https://github.com/amElnagdy/delegate-skills) (MIT, Ahmed Mohammed).
 
 ## Contribuir
 
