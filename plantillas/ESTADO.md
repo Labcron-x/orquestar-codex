@@ -1,6 +1,6 @@
 # Estado de la orquestación
 
-**Retomar:** `/orquestar-agentes Lee docs/agentes/ESTADO.md y continúa con el siguiente paso.`
+**Retomar:** `$orquestar-codex Lee docs/agentes/ESTADO.md y continúa con el siguiente paso.`
 
 ## Notas del proyecto
 
