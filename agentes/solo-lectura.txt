@@ -1,0 +1,1 @@
+MODO SOLO LECTURA: solo puedes leer e investigar. No crees, edites ni borres archivos. No ejecutes comandos que cambien archivos, configuración o el estado del repositorio. Tu respuesta final es el reporte completo; no lo escribas en un archivo.

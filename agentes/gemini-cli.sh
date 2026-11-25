@@ -11,9 +11,13 @@ FUERTE="alternativa a agy cuando se acaba su cuota; contexto largo"
 # (los worktrees quedan al lado de cada repo). Las consultas corren en /tmp: confía también esa carpeta si las usas.
 # Aprobación: auto_edit (edita sin preguntar, comandos no) | yolo (todo). Se cambia en el config.
 agente_lanzar() {
-  gemini -p "$1" ${2:+-m "$2"} --approval-mode "${GEMINI_CLI_APROBACION:-auto_edit}" -o json
+  local modo=${GEMINI_CLI_APROBACION:-auto_edit}
+  [ "${MODO:-escritura}" != lectura ] || modo=plan
+  gemini -p "$1" ${2:+-m "$2"} --approval-mode "$modo" -o json < /dev/null
 }
 agente_reintentar() {  # la sesión del worktree es la más reciente de ese directorio
-  gemini -p "$1" ${2:+-m "$2"} --resume latest --approval-mode "${GEMINI_CLI_APROBACION:-auto_edit}" -o json
+  local modo=${GEMINI_CLI_APROBACION:-auto_edit}
+  [ "${MODO:-escritura}" != lectura ] || modo=plan
+  gemini -p "$1" ${2:+-m "$2"} --resume latest --approval-mode "$modo" -o json < /dev/null
 }
 agente_modelos() { echo "Gemini CLI no lista modelos: usa -m <modelo> (p. ej. los gemini-*-pro / -flash vigentes)."; }

@@ -8,10 +8,16 @@ LOGIN="agy (inicia sesión con Google la primera vez)"
 FUERTE="código y UI, navegador (Playwright MCP), refactors grandes"
 
 agente_lanzar() {  # <prompt> <modelo>
-  "$AGY" -p "$1" --model "$2" --mode accept-edits ${AGY_FLAGS:-} --output-format stream-json --print-timeout 3000s
+  local modo=accept-edits flags=()
+  if [ "${MODO:-escritura}" = lectura ]; then modo=plan
+  else read -r -a flags <<< "${AGY_FLAGS:-}"; fi
+  "$AGY" -p "$1" --model "$2" --mode "$modo" "${flags[@]}" --output-format stream-json --print-timeout 3000s < /dev/null
 }
 agente_reintentar() {  # <prompt> <modelo> <sesión>
-  "$AGY" -p "$1" ${3:+--conversation "$3"} --model "$2" --mode accept-edits ${AGY_FLAGS:-} \
-    --output-format stream-json --print-timeout 3000s
+  local modo=accept-edits flags=()
+  if [ "${MODO:-escritura}" = lectura ]; then modo=plan
+  else read -r -a flags <<< "${AGY_FLAGS:-}"; fi
+  "$AGY" -p "$1" ${3:+--conversation "$3"} --model "$2" --mode "$modo" "${flags[@]}" \
+    --output-format stream-json --print-timeout 3000s < /dev/null
 }
 agente_modelos() { "$AGY" models; }

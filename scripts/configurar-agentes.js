@@ -1,5 +1,5 @@
 // Agrega a cada CLI instalado los MCP (markitdown, playwright, chrome-devtools, context7), las reglas deny y la skill de documentos.
-// Uso: node configurar-agentes.js <dir-skill>   (lo llama instalar.sh; respalda cada archivo como *.bak-orq)
+// Uso: node configurar-agentes.js <dir-skill> [--documentos]   (lo llama instalar.sh; respalda como *.bak-orq)
 // No borra nada de lo que ya tengas: solo agrega lo que falta.
 const fs = require("fs"), path = require("path"), os = require("os");
 const { execSync } = require("child_process");
@@ -42,6 +42,8 @@ const MCP = {
   // Chrome DevTools: consola, red y rendimiento (Lighthouse/trazas). --isolated: perfil temporal, varios agentes a la vez.
   "chrome-devtools": { command: "npx", args: ["-y", "chrome-devtools-mcp@latest", "--isolated"] },
 };
+// Sin --documentos no se registra un servidor que requiere las librerías opcionales de Python.
+if (!process.argv.includes("--documentos")) delete MCP.markitdown;
 const DENY = ["git push", "git reset --hard", "git clean", "git merge", "git rebase", "git worktree", "rm -rf",
   "npm publish", "pnpm publish", "prisma migrate reset", "--force-reset", "ssh", "scp", "vercel", "gh"];
 const VERIFICACION = ["git status", "git diff", "git log", "npm test", "npm run test", "npm run lint", "npm run build",
