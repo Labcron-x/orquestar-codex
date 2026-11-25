@@ -10,6 +10,7 @@ comunican por archivos, no por chat. Referencia (agentes, modelos, permisos, pro
 solo la sección que necesites. Requiere acceso completo para crear worktrees fuera del repo y lanzar agentes con red
 (`codex --sandbox danger-full-access` o "Acceso completo" en la app); si un comando falla por sandbox, avisa al usuario.
 
+Carpeta de la skill: `$S` = `~/.codex/skills/orquestar-codex` (o `$CODEX_HOME/skills/orquestar-codex`).
 Entrada única: `orq <comando> [args]`. Escribe la ruta completa en cada llamada (las variables no persisten):
 - **PowerShell** (Windows; `bash` a secas suele ser WSL, no lo uses):
   `& "$env:ProgramFiles\Git\bin\bash.exe" "$env:USERPROFILE/.codex/skills/orquestar-codex/scripts/orq.sh" <comando> ...`
@@ -31,9 +32,10 @@ los agentes usan el MCP `chrome-devtools` (consola, red, rendimiento) y `playwri
 ## Al empezar en un repo
 
 1. Si existe `docs/agentes/ESTADO.md`, léelo y sigue desde su "Siguiente paso". No leas chats anteriores.
-2. Si no existe, prepara el repo **una vez**: copia la plantilla a `docs/agentes/ESTADO.md` y llena "Notas del
-   proyecto" mirando solo `package.json`/README/AGENTS.md; si no hay `AGENTS.md`, créalo desde la plantilla con los
-   comandos de verificación del proyecto; crea `docs/agentes/{tareas,reportes}/`; haz commit.
+2. Si no existe, prepara el repo **una vez**: copia `$S/plantillas/ESTADO.md` a `docs/agentes/ESTADO.md` y llena "Notas
+   del proyecto" mirando solo `package.json`/README/AGENTS.md; si no hay `AGENTS.md`, créalo desde
+   `$S/plantillas/AGENTS.md` con los comandos de verificación del proyecto; crea `docs/agentes/{tareas,reportes}/`; haz
+   commit.
 
 ## Repartir
 
@@ -56,8 +58,8 @@ Jerarquía de inteligencia: **Codex (orquestador) > agy / OpenCode / Gemini CLI 
 
 ## Ciclo por tarea
 
-1. **Tarea:** `docs/agentes/tareas/<ID>.md` desde la plantilla: objetivo, archivos permitidos, contrato, criterios y
-   verificación. Corta: el agente no ve esta conversación.
+1. **Tarea:** `docs/agentes/tareas/<ID>.md` desde `$S/plantillas/tarea.md`: objetivo, archivos permitidos, contrato,
+   criterios y verificación. Corta: el agente no ve esta conversación.
 2. **Lanzar en segundo plano** (Codex no recibe aviso al terminar un proceso):
    ```bash
    orq fondo lanzar <agente> <ID> [modelo|-] [rama-base]
