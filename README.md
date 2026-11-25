@@ -1,35 +1,50 @@
-# codex-orquestador
+# orquestar-codex
 
-Skill de Codex: derivado de claude-orquestador; aquí orquesta Codex. Codex delega en agentes de CLI para hacer el trabajo
-pesado y paralelo. Los agentes son Antigravity (`agy`), OpenCode, Gemini CLI, Qwen Code, Qoder y MiniMax Code (`mcode`)
-(o cualquier otro que agregues). Sirve para cualquier proyecto (código, pruebas de navegador, documentos) y para consultas
-sueltas (investigar, resumir, revisar archivos).
+Skill de Codex derivada de claude-orquestador: aquí el que orquesta es Codex. Codex reparte el trabajo pesado y paralelo
+entre agentes de CLI: Antigravity (`agy`), OpenCode, Gemini CLI, Qwen Code, Qoder y MiniMax Code (`mcode`), o cualquier
+otro que agregues. Sirve para cualquier proyecto (código, pruebas de navegador, documentos) y para consultas sueltas
+(investigar, resumir, revisar archivos).
 
 ## Instalar (cada persona del equipo)
 
-Requisitos: git, Node.js, Python 3 y bash (en Windows, Git Bash).
+Requisitos: git, Node.js y bash (en Windows, Git Bash). Python 3 solo si vas a usar `--documentos` o `--libreoffice`.
 
 ```bash
 git clone https://github.com/Labcron-x/orquestar-codex.git ~/.codex/skills/orquestar-codex
 bash ~/.codex/skills/orquestar-codex/instalar.sh
-# opciones: --agentes "agy opencode gemini-cli qwen qoder mcode"   --documentos   --libreoffice
 ```
 
-El instalador hace esto:
+### Qué instala sin opciones
 
-- instala los CLI que falten (`agy`, `opencode`, `gemini`, `qwen`, `qodercli`, `mcode`);
-- nada de documentos por defecto: con `--documentos` instala las librerías de Python y pandoc (livianos); con
-  `--libreoffice`, además LibreOffice (~1 GB, solo para pasar a PDF y recalcular fórmulas de Excel);
-- agrega a cada CLI los MCP: Playwright, Chrome DevTools, markitdown y Context7;
-- agrega las reglas que bloquean push, borrados, publicación y despliegues en los agentes;
-- instala la skill de documentos;
-- crea tu config personal en `~/.config/orquestar-codex/config`;
-- configura los metadatos de la skill en `~/.codex/skills/orquestar-codex`.
+- Codex CLI, si falta.
+- Dos agentes, si faltan: OpenCode y Gemini CLI. Los demás se eligen con `--agentes` (abajo).
+- En cada CLI de agente: los MCP Playwright, Chrome DevTools y Context7, y las reglas que bloquean push, borrados,
+  publicación y despliegues.
+- La guía de documentos como skill de agy y OpenCode. Es un archivo de texto: no instala ningún programa.
+- Las skills del equipo (`skills/`) en `~/.codex/skills/`, y tu config personal en `~/.config/orquestar-codex/config`.
 
-Respalda cada archivo que toca como `*.bak-orq` y se puede correr varias veces.
+**No instala nada de documentos:** ni librerías de Python, ni pandoc, ni LibreOffice.
 
-Después inicia sesión una vez en cada CLI (`gemini`, `agy`, `qodercli login`, `mcode login`; `qwen` solo con API key de pago).
-OpenCode con modelos `opencode/*` no lo pide.
+### Opciones
+
+| Opción | Qué agrega | Espacio aprox. |
+|---|---|---|
+| `--agentes "..."` | Elige los agentes en lugar de los dos por defecto: `agy opencode gemini-cli qwen qoder mcode`. `agy` no se instala por npm: el instalador avisa que lo bajes de la web de Antigravity | según el agente |
+| `--documentos` | Librerías de Python (pypdf, python-docx, openpyxl, python-pptx, pandas, markitdown), pandoc y el MCP markitdown. Con eso los agentes leen y crean PDF, Word, Excel y PowerPoint | ~500 MB |
+| `--libreoffice` | Todo lo de `--documentos` más LibreOffice. Solo hace falta para pasar documentos a PDF y recalcular fórmulas de Excel; sin él, el agente entrega el archivo y anota en su reporte lo que no pudo convertir | ~500 MB + ~800 MB |
+
+Ejemplos:
+
+```bash
+bash ~/.codex/skills/orquestar-codex/instalar.sh --agentes "agy opencode gemini-cli qoder"   # solo programar
+bash ~/.codex/skills/orquestar-codex/instalar.sh --documentos                                # además, documentos
+```
+
+Se puede correr varias veces (por ejemplo, para sumar una opción después): solo agrega lo que falta y respalda cada
+archivo que toca como `*.bak-orq`.
+
+Después inicia sesión una vez en cada CLI que instalaste: `codex login`, `gemini`, `agy`, `qodercli login`,
+`mcode login` (`qwen` solo con API key de pago). OpenCode con modelos `opencode/*` no lo pide.
 
 ### Convive con claude-orquestador
 

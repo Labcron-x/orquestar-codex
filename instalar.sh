@@ -5,8 +5,8 @@
 #   bash ~/.codex/skills/orquestar-codex/instalar.sh [--agentes "agy opencode gemini-cli qwen qoder mcode"] [--documentos] [--libreoffice]
 # Si defines CODEX_HOME, clona en "$CODEX_HOME/skills/orquestar-codex".
 #
-# Hace: instala los CLI de agentes que falten; con --documentos, las librerías de Python y pandoc (livianos); con
-# --libreoffice, además LibreOffice (~1 GB: pasar a PDF y recalcular Excel). Configura en cada CLI los MCP
+# Hace: instala los CLI de agentes que falten; con --documentos, las librerías de Python y pandoc (~500 MB);
+# con --libreoffice, además LibreOffice (~800 MB más: pasar a PDF y recalcular Excel). Configura en cada CLI los MCP
 # (Playwright, Chrome DevTools, markitdown, Context7), las reglas deny y la skill de documentos,
 # y crea tu config personal. Respalda cada archivo que toca como *.bak-orq. Se puede correr varias veces.
 set -u
@@ -84,7 +84,7 @@ if [ $DOCUMENTOS = 1 ]; then
   programa pandoc JohnMacFarlane.Pandoc pandoc pandoc
 
   if [ $LIBREOFFICE = 1 ]; then
-    paso "LibreOffice (~1 GB)"
+    paso "LibreOffice (~800 MB)"
     programa soffice TheDocumentFoundation.LibreOffice libreoffice --cask libreoffice
   fi
 fi
@@ -122,6 +122,6 @@ Después abre Codex en modo seguro:
   o selecciona "Pedir aprobación" en la app.
 La primera vez que Codex ejecute orq con permisos elevados, aprueba con "no volver a preguntar".
 Documentos opcionales: vuelve a correr instalar.sh con --documentos (librerías de Python y pandoc) o con
---libreoffice (lo mismo más LibreOffice, ~1 GB, para pasar a PDF y recalcular fórmulas de Excel).
+--libreoffice (lo mismo más LibreOffice, ~800 MB más, para pasar a PDF y recalcular fórmulas de Excel).
 Escribe: $orquestar-codex <lo que quieres hacer>
 EOF

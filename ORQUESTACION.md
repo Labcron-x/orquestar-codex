@@ -93,7 +93,8 @@ Desde el repo. En `..` quedan `wt-<repo>-<ID>/` y `<repo>-<ID>.{jsonl,meta,setup
 ## 5. Documentos (PDF, Word, Excel, PowerPoint)
 
 - **Instalación opcional:** por defecto no se instala nada de documentos. `instalar.sh --documentos` instala las
-  librerías de Python y `pandoc`; `--libreoffice` suma LibreOffice (~1 GB, para pasar a PDF y recalcular Excel).
+  librerías de Python y `pandoc` (~500 MB); `--libreoffice` suma LibreOffice (~800 MB más, para pasar a PDF y
+  recalcular Excel).
 - **Agentes:** guía `guias/documentos.md` (se copia a `.agentes/` de cada worktree o consulta, y como skill
   `documentos` en agy y OpenCode), MCP `markitdown` (convierte PDF/docx/xlsx/pptx a Markdown), librerías `pypdf`,
   `pdfplumber`, `reportlab`, `python-docx`, `openpyxl`, `pandas`, `python-pptx`, `pandoc` y, si se instaló, LibreOffice.
