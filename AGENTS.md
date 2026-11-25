@@ -18,6 +18,7 @@ misma PC con esa versión sin tocar nada de ella: nada en `~/.claude/`, ni `~/.c
 ## Verificación
 
 - `bash scripts/verificar.sh` (sintaxis bash y Node, ShellCheck si está, carga de los adaptadores)
+- `bash scripts/pruebas.sh` (pruebas sin git ni agentes reales: adaptadores, extraer.js, instalador)
 
 ## Al terminar
 
